@@ -225,7 +225,8 @@ forge test --gas-report
 ```
 
 #### Gas snapshot
-See [gas-snapshot.txt](https://github.com/code-423n4/2024-04-panoptic/tree/main/assets/gas-snapshot.txt)
+See [gas-snapshot.txt](https://github.com/code-423n4/2024-04-panoptic/tree/main/assets/gas-snapshot.txt).
+Note that one of the tests (`test_Success_getLastMedianObservation()`) has failed during the snapshot due to RPC limits. The actual snapshot might be slightly different.
 
 
 ## Miscellaneous
