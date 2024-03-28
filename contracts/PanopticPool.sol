@@ -301,17 +301,7 @@ contract PanopticPool is ERC1155Holder, Multicall {
         // Store the univ3Pool variable
         s_univ3pool = IUniswapV3Pool(_univ3pool);
 
-        (, , uint16 observationIndex, uint16 observationCardinality, , , ) = IUniswapV3Pool(
-            _univ3pool
-        ).slot0();
-
-        int24 slowOracleTick = PanopticMath.computeMedianObservedPrice(
-            _univ3pool,
-            observationIndex,
-            observationCardinality,
-            SLOW_ORACLE_CARDINALITY,
-            SLOW_ORACLE_PERIOD
-        );
+        (, int24 currentTick, , , , , ) = IUniswapV3Pool(_univ3pool).slot0();
 
         // Store the median data
         unchecked {
@@ -320,8 +310,8 @@ contract PanopticPool is ERC1155Holder, Multicall {
                 // magic number which adds (7,5,3,1,0,2,4,6) order and minTick in positions 7, 5, 3 and maxTick in 6, 4, 2
                 // see comment on s_miniMedian initialization for format of this magic number
                 (uint256(0xF590A6F276170D89E9F276170D89E9F276170D89E9000000000000)) +
-                (uint256(uint24(slowOracleTick)) << 24) + // add to slot 4
-                (uint256(uint24(slowOracleTick))); // add to slot 3
+                (uint256(uint24(currentTick)) << 24) + // add to slot 4
+                (uint256(uint24(currentTick))); // add to slot 3
         }
 
         // Store the collateral token0
@@ -668,7 +658,10 @@ contract PanopticPool is ERC1155Holder, Multicall {
 
         // Perform solvency check on user's account to ensure they had enough buying power to mint the option
         // Add an initial buffer to the collateral requirement to prevent users from minting their account close to insolvency
-        _validateSolvency(msg.sender, positionIdList, BP_DECREASE_BUFFER);
+        uint256 medianData = _validateSolvency(msg.sender, positionIdList, BP_DECREASE_BUFFER);
+
+        // Update `s_miniMedian` with a new observation if the last observation is old enough (returned medianData is nonzero)
+        if (medianData != 0) s_miniMedian = medianData;
 
         emit OptionMinted(msg.sender, positionSize, tokenId, poolUtilizations);
     }
@@ -890,11 +883,12 @@ contract PanopticPool is ERC1155Holder, Multicall {
     /// @param user The account to validate.
     /// @param positionIdList The new positionIdList without the token(s) being burnt.
     /// @param buffer The buffer to apply to the collateral requirement for `user`
+    /// @return medianData If nonzero (enough time has passed since last observation), the updated value for `s_miniMedian` with a new observation
     function _validateSolvency(
         address user,
         TokenId[] calldata positionIdList,
         uint256 buffer
-    ) internal view {
+    ) internal view returns (uint256 medianData) {
         // check that the provided positionIdList matches the positions in memory
         _validatePositionList(user, positionIdList, 0);
 
@@ -926,7 +920,7 @@ contract PanopticPool is ERC1155Holder, Multicall {
                 SLOW_ORACLE_PERIOD
             );
         } else {
-            (slowOracleTick, ) = PanopticMath.computeInternalMedian(
+            (slowOracleTick, medianData) = PanopticMath.computeInternalMedian(
                 observationIndex,
                 observationCardinality,
                 MEDIAN_PERIOD,
