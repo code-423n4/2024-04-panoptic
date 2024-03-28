@@ -103,6 +103,8 @@ Once they have deposited, there are many options for the other actors in the pro
 
 - `mintOptions` - create an option position with up to four distinct legs with a specially encoded - positionID/tokenID, each of which is its own short (sold/added) or long (bought/removed) liquidity chunk
 - `burnOptions` - burn or exercise a position created through `mintOptions`
+- `settleLongPremium` - Force a solvent option buyer to pay any premium owed to sellers. Options sellers will want to call this if a large portion of the total premium owed in their chunk  is pending/has not been settled.
+- `pokeMedian` - Takes a new internal median observation and inserts it into the internal median ring buffer if enough time has passed since the last observation. Otherwise, the buffer is poked during `mintOptions`/`burnOptions`
 
 Meanwhile, force exercisers and liquidators can perform their respective roles with the `forceExercise` and `liquidateAccount` functions.
 
