@@ -133,10 +133,8 @@ contracts/
 │   ├── Math — "Library of generic math functions like abs(), mulDiv, etc"
 │   ├── PanopticMath — "Library containing advanced Panoptic/Uniswap-specific functionality such as our TWAP, price conversions, and position sizing math"
 │   └── SafeTransferLib — "Safe ERC20 transfer library that gracefully handles missing return values"
-├── multicall
-│   └── Multicall — "Adds a function to inheriting contracts that allows for multiple calls to be executed in a single transaction"
-└── periphery
-    └── PanopticHelper — "Contains useful position construction and query functions, including collateral checks and account liquidation price finders"
+└── multicall
+    └── Multicall — "Adds a function to inheriting contracts that allows for multiple calls to be executed in a single transaction"
 ```
 
 ## Links
