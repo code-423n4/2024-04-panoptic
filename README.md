@@ -1,7 +1,8 @@
 # Panoptic audit details
-- Total Prize Pool: $120,000 in USDC
+- Total Prize Pool: $125,700 in USDC
   - HM awards: $104,500 in USDC
-  - QA awards: $4180 in USDC
+  - QA awards: $2850 in USDC
+  - Gas awards: $2850 in USDC
   - Judge awards: $9,000 USDC
   - Lookout awards: $6,000 USDC
   - Scout awards: $500 in USDC
