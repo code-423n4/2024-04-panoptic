@@ -143,11 +143,23 @@ contracts/
 ## Links
 
 - **Previous audits:**  None public
-- **Documentation:** https://docs.panoptic.xyz/ 
-- **Website:** https://panoptic.xyz/
-- **Twitter:** https://twitter.com/Panoptic_xyz
-- **Discord:** https://discord.com/invite/9aGgM4B4MZ
+- [Panoptic's Website](https://www.panoptic.xyz)
+- [Whitepaper](https://paper.panoptic.xyz/)
+- [Litepaper](https://intro.panoptic.xyz)
+- [Documentation](https://docs.panoptic.xyz/)
+- [Twitter](https://twitter.com/Panoptic_xyz)
+- [Discord](https://discord.gg/7fE8SN9pRT)
+- [Blog](https://www.panoptic.xyz/blog)
+- [YouTube](https://www.youtube.com/@Panopticxyz)
 
+### Further Reading
+
+Panoptic has been presented at conferences and was conceived with the first Panoptic's Genesis blog post in mid-summer 2021:
+
+- [Panoptic @ ETH Denver 2023](https://www.youtube.com/watch?v=Dt5AdCNavjs)
+- [Panoptic @ ETH Denver 2022](https://www.youtube.com/watch?v=mtd4JphPcuA)
+- [Panoptic @ DeFi Guild](https://www.youtube.com/watch?v=vlPIFYfG0FU)
+- [Panoptic's Genesis: Blog Series](https://lambert-guillaume.medium.com/)
 ---
 
 # Scope
