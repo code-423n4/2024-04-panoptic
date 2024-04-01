@@ -17,7 +17,7 @@ import {PanopticMath} from "@libraries/PanopticMath.sol";
 import {SafeTransferLib} from "@libraries/SafeTransferLib.sol";
 // Custom types
 import {LeftRightUnsigned, LeftRightSigned, LeftRightLibrary} from "@types/LeftRight.sol";
-import {LiquidityChunk, LiquidityChunkLibrary} from "@types/LiquidityChunk.sol";
+import {LiquidityChunk} from "@types/LiquidityChunk.sol";
 import {TokenId} from "@types/TokenId.sol";
 
 //                                                                        ..........

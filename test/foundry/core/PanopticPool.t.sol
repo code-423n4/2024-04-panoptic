@@ -9,6 +9,8 @@ import {FeesCalc} from "@libraries/FeesCalc.sol";
 import {TokenId} from "@types/TokenId.sol";
 import {LeftRightUnsigned, LeftRightSigned} from "@types/LeftRight.sol";
 import {LiquidityChunk, LiquidityChunkLibrary} from "@types/LiquidityChunk.sol";
+import {IDonorNFT} from "@tokens/interfaces/IDonorNFT.sol";
+import {DonorNFT} from "@periphery/DonorNFT.sol";
 import {IERC20Partial} from "@tokens/interfaces/IERC20Partial.sol";
 import {TickMath} from "v3-core/libraries/TickMath.sol";
 import {FullMath} from "v3-core/libraries/FullMath.sol";
@@ -372,14 +374,36 @@ contract PanopticPoolTest is PositionUtils {
     function _deployPanopticPool() internal {
         vm.startPrank(Deployer);
 
-        factory = new PanopticFactory(WETH, sfpm, V3FACTORY, poolReference, collateralReference);
+        IDonorNFT dNFT = IDonorNFT(address(new DonorNFT()));
+
+        factory = new PanopticFactory(
+            WETH,
+            sfpm,
+            V3FACTORY,
+            dNFT,
+            poolReference,
+            collateralReference
+        );
+
+        factory.initialize(Deployer);
+
+        DonorNFT(address(dNFT)).changeFactory(address(factory));
 
         deal(token0, Deployer, type(uint104).max);
         deal(token1, Deployer, type(uint104).max);
         IERC20Partial(token0).approve(address(factory), type(uint104).max);
         IERC20Partial(token1).approve(address(factory), type(uint104).max);
 
-        pp = PanopticPoolHarness(address(factory.deployNewPool(token0, token1, fee, 1337)));
+        pp = PanopticPoolHarness(
+            address(
+                factory.deployNewPool(
+                    token0,
+                    token1,
+                    fee,
+                    bytes32(uint256(uint160(Deployer)) << 96)
+                )
+            )
+        );
 
         ct0 = pp.collateralToken0();
         ct1 = pp.collateralToken1();

@@ -28,11 +28,11 @@ library Errors {
     /// @notice PanopticPool: the provided list of option positions is incorrect or invalid
     error InputListFail();
 
+    /// @notice PanopticFactory: irst 20 bytes of provided salt does not match caller address
+    error InvalidSalt();
+
     /// @notice Tick is not between `MIN_TICK` and `MAX_TICK`
     error InvalidTick();
-
-    /// @notice A mint or swap callback was attempted from an address that did not match the canonical Uniswap V3 pool with the claimed features
-    error InvalidUniswapCallback();
 
     /// @notice The result of a notional value conversion is too small (=0) or too large (>2^128-1)
     error InvalidNotionalValue();
@@ -40,6 +40,9 @@ library Errors {
     /// @notice Invalid TokenId parameter detected
     /// @param parameterType poolId=0, ratio=1, tokenType=2, risk_partner=3 , strike=4, width=5, two identical strike/width/tokenType chunks=6
     error InvalidTokenIdParameter(uint256 parameterType);
+
+    /// @notice A mint or swap callback was attempted from an address that did not match the canonical Uniswap V3 pool with the claimed features
+    error InvalidUniswapCallback();
 
     /// @notice Invalid input in LeftRight library.
     error LeftRightInputError();

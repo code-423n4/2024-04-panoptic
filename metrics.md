@@ -29,38 +29,39 @@ This section lists files that are in scope for the metrics report.
 
 - **Project:** `Scoping for panoptic-labs - panoptic-v1-core-private`
 - **Included Files:** 
-19
+20
 - **Excluded Files:** 
 30
 - **Project analysed:** `https://github.com/panoptic-labs/panoptic-v1-core-private` (`@dcb619e9a18465ff17422a7f0a8db2a619e6c5fe`)
 
 ### <span id=t-source-Units-in-Scope>Source Units in Scope</span>
 
-Source Units Analyzed: **`19`**<br>
-Source Units in Scope: **`19`** (**100%**)
+Source Units Analyzed: **`20`**<br>
+Source Units in Scope: **`20`** (**100%**)
 
-| Type | File   | Logic Contracts | Interfaces | Lines | nLines | SLOC | Comment Lines | Complex. Score | Capabilities |
-| ---- | ------ | --------------- | ---------- | ----- | ------ | ----- | ------------- | -------------- | ------------ |
-| 📝 | /contracts/CollateralTracker.sol | 1 | **** | 1650 | 1540 | 792 | 669 | 415 | **<abbr title='Initiates ETH Value Transfer'>📤</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
-| 📝 | /contracts/PanopticFactory.sol | 1 | **** | 547 | 516 | 249 | 232 | 126 | **<abbr title='Unchecked Blocks'>Σ</abbr>** |
-| 📝 | /contracts/PanopticPool.sol | 1 | **** | 1987 | 1825 | 1162 | 595 | 597 | **<abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
-| 📝 | /contracts/SemiFungiblePositionManager.sol | 1 | **** | 1569 | 1446 | 724 | 697 | 352 | **<abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
-| 📚 | /contracts/libraries/CallbackLib.sol | 1 | **** | 39 | 35 | 22 | 13 | 4 | **** |
-| 📚 | /contracts/libraries/Constants.sol | 1 | **** | 23 | 23 | 9 | 9 | 6 | **** |
-| 📚 | /contracts/libraries/Errors.sol | 1 | **** | 109 | 109 | 35 | 42 | 1 | **** |
-| 📚 | /contracts/libraries/FeesCalc.sol | 1 | **** | 209 | 194 | 86 | 115 | 41 | **<abbr title='Unchecked Blocks'>Σ</abbr>** |
-| 📚 | /contracts/libraries/InteractionHelper.sol | 1 | **** | 116 | 101 | 72 | 38 | 38 | **<abbr title='TryCatch Blocks'>♻️</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
-| 📚 | /contracts/libraries/Math.sol | 1 | **** | 782 | 763 | 417 | 304 | 531 | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
-| 📚 | /contracts/libraries/PanopticMath.sol | 1 | **** | 967 | 892 | 573 | 308 | 445 | **<abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
-| 📚 | /contracts/libraries/SafeTransferLib.sol | 1 | **** | 77 | 77 | 33 | 37 | 113 | **<abbr title='Uses Assembly'>🖥</abbr>** |
-| 🎨 | /contracts/multicall/Multicall.sol | 1 | **** | 37 | 37 | 18 | 15 | 37 | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='Payable Functions'>💰</abbr><abbr title='DelegateCall'>👥</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
-| 🎨 | /contracts/tokens/ERC1155Minimal.sol | 1 | **** | 241 | 226 | 115 | 91 | 61 | **<abbr title='Unchecked Blocks'>Σ</abbr>** |
-| 🎨 | /contracts/tokens/ERC20Minimal.sol | 1 | **** | 147 | 147 | 52 | 66 | 20 | **<abbr title='Unchecked Blocks'>Σ</abbr>** |
-| 🔍 | /contracts/tokens/interfaces/IERC20Partial.sol | **** | 1 | 28 | 16 | 6 | 19 | 7 | **** |
-| 📚 | /contracts/types/LeftRight.sol | 1 | **** | 302 | 279 | 156 | 102 | 144 | **<abbr title='Unchecked Blocks'>Σ</abbr>** |
-| 📚 | /contracts/types/LiquidityChunk.sol | 1 | **** | 194 | 175 | 91 | 88 | 33 | **<abbr title='Unchecked Blocks'>Σ</abbr>** |
-| 📚 | /contracts/types/TokenId.sol | 1 | **** | 600 | 559 | 305 | 246 | 158 | **<abbr title='Unchecked Blocks'>Σ</abbr>** |
-| 📝📚🔍🎨 | **Totals** | **18** | **1** | **9624**  | **8960** | **4917** | **3686** | **3129** | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='Payable Functions'>💰</abbr><abbr title='Initiates ETH Value Transfer'>📤</abbr><abbr title='DelegateCall'>👥</abbr><abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='TryCatch Blocks'>♻️</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
+| Type | File   | Logic Contracts | Interfaces | Lines | nLines | nSLOC | Comment Lines | Complex. Score | Capabilities |
+| ---- | ------ | --------------- | ---------- | ----- | ------ | ----- | ------------- | -------------- | ------------ | 
+| 📝 | contracts/CollateralTracker.sol | 1 | **** | 1650 | 1540 | 682 | 669 | 415 | **<abbr title='Initiates ETH Value Transfer'>📤</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 📝 | contracts/PanopticFactory.sol | 1 | **** | 423 | 405 | 198 | 143 | 103 | **<abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 📝 | contracts/PanopticPool.sol | 1 | **** | 1981 | 1819 | 992 | 597 | 597 | **<abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 📝 | contracts/SemiFungiblePositionManager.sol | 1 | **** | 1569 | 1446 | 601 | 697 | 352 | **<abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 📚 | contracts/libraries/CallbackLib.sol | 1 | **** | 39 | 35 | 18 | 13 | 4 | **** |
+| 📚 | contracts/libraries/Constants.sol | 1 | **** | 23 | 23 | 9 | 9 | 6 | **** |
+| 📚 | contracts/libraries/Errors.sol | 1 | **** | 112 | 112 | 36 | 43 | 1 | **** |
+| 📚 | contracts/libraries/FeesCalc.sol | 1 | **** | 209 | 194 | 71 | 115 | 41 | **<abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 📚 | contracts/libraries/InteractionHelper.sol | 1 | **** | 116 | 101 | 57 | 38 | 38 | **<abbr title='TryCatch Blocks'>♻️</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 📚 | contracts/libraries/Math.sol | 1 | **** | 782 | 763 | 398 | 304 | 531 | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 📚 | contracts/libraries/PanopticMath.sol | 1 | **** | 967 | 892 | 498 | 308 | 445 | **<abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 📚 | contracts/libraries/SafeTransferLib.sol | 1 | **** | 77 | 77 | 33 | 37 | 113 | **<abbr title='Uses Assembly'>🖥</abbr>** |
+| 🎨 | contracts/multicall/Multicall.sol | 1 | **** | 37 | 37 | 18 | 15 | 37 | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='Payable Functions'>💰</abbr><abbr title='DelegateCall'>👥</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 🎨 | contracts/tokens/ERC1155Minimal.sol | 1 | **** | 241 | 226 | 100 | 91 | 61 | **<abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 🎨 | contracts/tokens/ERC20Minimal.sol | 1 | **** | 147 | 147 | 52 | 66 | 20 | **<abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 🔍 | contracts/tokens/interfaces/IDonorNFT.sol | **** | 1 | 20 | 13 | 4 | 7 | 3 | **** |
+| 🔍 | contracts/tokens/interfaces/IERC20Partial.sol | **** | 1 | 28 | 16 | 3 | 19 | 7 | **** |
+| 📚 | contracts/types/LeftRight.sol | 1 | **** | 302 | 279 | 133 | 102 | 144 | **<abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 📚 | contracts/types/LiquidityChunk.sol | 1 | **** | 194 | 175 | 72 | 88 | 33 | **<abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 📚 | contracts/types/TokenId.sol | 1 | **** | 600 | 559 | 264 | 246 | 158 | **<abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 📝📚🔍🎨 | **Totals** | **18** | **2** | **9517**  | **8859** | **4239** | **3607** | **3109** | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='Payable Functions'>💰</abbr><abbr title='Initiates ETH Value Transfer'>📤</abbr><abbr title='DelegateCall'>👥</abbr><abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='TryCatch Blocks'>♻️</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
 
 ##### <span>Legend</span>
 <ul>

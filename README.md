@@ -36,6 +36,7 @@ of these functions will validate the inputs beforehand.
  - Front-running via insufficient slippage specification is not in scope
  - It's known that liquidators sometimes have a limited capacity to force liquidations to execute at a less favorable price and extract some additional profit from that. This is acceptable even if it causes some amount of unnecessary protocol loss.
  - It's possible to leverage the rounding direction to artificially inflate the total gross premium and significantly decrease the rate of premium option sellers earn/are able to withdraw (but not the premium buyers pay) in the future (only significant for very-low-decimal pools, since this must be done one token at a time).
+ - It's also possible for options buyers to avoid paying premium by calling `settleLongPremium` if the amount of premium owed is sufficiently small.
 - Premium accumulation can become permanently capped if the accumulator exceeds the maximum value; this can happen if a low amount of liquidity earns a large amount of (token) fees
 - The liquidator may not be able to execute a liquidation if MAX_POSITIONS is too high for the deployed chain due to an insufficient gas limit. This parameter is not final and will be adjusted by deployed chain such that the most expensive liquidation is well within a safe margin of the gas limit.
 - It's expected that liquidators may have to sell options, perform force exercises, and deposit collateral to perform some liquidations. In some situations, the liquidation may not be profitable.
@@ -120,6 +121,7 @@ contracts/
 │   ├── ERC1155Minimal — "A minimalist implementation of the ERC1155 token standard without metadata"
 │   ├── ERC20Minimal — "A minimalist implementation of the ERC20 token standard without metadata"
 │   └── interfaces
+        ├── IDonorNFT — "An interface the PanopticFactory can use to issue reward NFTs"
 │       └── IERC20Partial — "An incomplete ERC20 interface containing functions used in Panoptic with some return values omitted to support noncompliant tokens such as USDT"
 ├── types
 │   ├── LeftRight — "Implementation for a set of custom data types that can hold two 128-bit numbers"
@@ -170,11 +172,12 @@ contracts/
 | [contracts/multicall/Multicall.sol](https://github.com/code-423n4/2024-04-panoptic/tree/main/contracts/multicall/Multicall.sol)             | 1               | ****       | 18   |
 | [contracts/tokens/ERC1155Minimal.sol](https://github.com/code-423n4/2024-04-panoptic/tree/main/contracts/tokens/ERC1155Minimal.sol)           | 1               | ****       | 115  |
 | [contracts/tokens/ERC20Minimal.sol](https://github.com/code-423n4/2024-04-panoptic/tree/main/contracts/tokens/ERC20Minimal.sol)             | 1               | ****       | 52   |
+| [contracts/tokens/interfaces/IDonorNFT.sol](https://github.com/code-423n4/2024-04-panoptic/tree/main/contracts/tokens/interfaces/IDonorNFT.sol) | ****            | 1          | 4    |
 | [contracts/tokens/interfaces/IERC20Partial.sol](https://github.com/code-423n4/2024-04-panoptic/tree/main/contracts/tokens/interfaces/IERC20Partial.sol) | ****            | 1          | 6    |
 | [contracts/types/LeftRight.sol](https://github.com/code-423n4/2024-04-panoptic/tree/main/contracts/types/LeftRight.sol)                 | 1               | ****       | 156  |
 | [contracts/types/LiquidityChunk.sol](https://github.com/code-423n4/2024-04-panoptic/tree/main/contracts/types/LiquidityChunk.sol)            | 1               | ****       | 91   |
 | [contracts/types/TokenId.sol](https://github.com/code-423n4/2024-04-panoptic/tree/main/contracts/types/TokenId.sol)                   | 1               | ****       | 305  |
-| Totals                                         | 18              | 1          | 4917 |
+| Totals                                         | 18              | 1          | 4921 |
 
 
 ### Files out of scope
@@ -301,8 +304,8 @@ There is a factory owner but they do not have any permissions over the contracts
 ⚠️**Note**: You will need to provide your own Ethereum Mainnet eth_rpc_url (Works best with a local archives node) in the Foundry.toml.
 
 ```bash
-git clone --recurse-submodules https://github.com/code-423n4/2023-04-panoptic.git
-cd 2023-04-panoptic
+git clone --recurse-submodules https://github.com/code-423n4/2024-04-panoptic.git
+cd 2024-04-panoptic
 export FOUNDRY_PROFILE=ci_test  # (tests WILL fail without this because of a Foundry bug)
 forge build
 forge test

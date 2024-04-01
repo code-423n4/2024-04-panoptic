@@ -6,6 +6,8 @@ import {SemiFungiblePositionManager} from "@contracts/SemiFungiblePositionManage
 import {PanopticPool} from "@contracts/PanopticPool.sol";
 import {CollateralTracker} from "@contracts/CollateralTracker.sol";
 import {PanopticFactory} from "@contracts/PanopticFactory.sol";
+import {IDonorNFT} from "@tokens/interfaces/IDonorNFT.sol";
+import {DonorNFT} from "@periphery/DonorNFT.sol";
 import {PanopticHelper} from "@periphery/PanopticHelper.sol";
 import {ISwapRouter} from "v3-periphery/interfaces/ISwapRouter.sol";
 import {ERC20S} from "@scripts/tokens/ERC20S.sol";
@@ -212,13 +214,18 @@ contract Misctest is Test, PositionUtils {
 
         vm.startPrank(Deployer);
 
+        IDonorNFT dNFT = IDonorNFT(address(new DonorNFT()));
         factory = new PanopticFactory(
             address(token1),
             sfpm,
             V3FACTORY,
+            dNFT,
             poolReference,
             collateralReference
         );
+        factory.initialize(Deployer);
+
+        DonorNFT(address(dNFT)).changeFactory(address(factory));
 
         token0.mint(Deployer, type(uint104).max);
         token1.mint(Deployer, type(uint104).max);
@@ -226,7 +233,14 @@ contract Misctest is Test, PositionUtils {
         token1.approve(address(factory), type(uint104).max);
 
         pp = PanopticPool(
-            address(factory.deployNewPool(address(token0), address(token1), 500, 1337))
+            address(
+                factory.deployNewPool(
+                    address(token0),
+                    address(token1),
+                    500,
+                    bytes32(uint256(uint160(Deployer)) << 96)
+                )
+            )
         );
 
         vm.startPrank(Swapper);

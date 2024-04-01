@@ -13,6 +13,7 @@
 ./contracts/multicall/Multicall.sol
 ./contracts/tokens/ERC1155Minimal.sol
 ./contracts/tokens/ERC20Minimal.sol
+./contracts/tokens/interfaces/IDonorNFT.sol
 ./contracts/tokens/interfaces/IERC20Partial.sol
 ./contracts/types/LeftRight.sol
 ./contracts/types/LiquidityChunk.sol
