@@ -1,0 +1,2188 @@
+==============================================================
+Guild: Code4rena
+Channel: ARCHIVE-Q2-2024 / panoptic-apr01
+==============================================================
+
+[04/01/2024 16:12] kartoonjoy (pinned)
+👋 Hello and welcome to the audit channel for the **$120,000 in USDC** Panoptic  audit!
+
+📆 Audit opens 04/01/2024 20:00 (20:00 UTC) and runs through 04/22/2024 20:00 (20:00 UTC) (21 days).
+
+Please give a warm welcome to the Panoptic team, particularly @dyed | Panoptic, who will be available for questions either here in the channel or via a **__PRIVATE__** thread in the ET timezone(s). 
+
+We'll be posting relevant links, documentation, etc. here, so if you intend to participate in this audit, consider enabling notifications for this channel. 🐺 ⏰
+
+Audit Page: https://code4rena.com/audits/2024-04-panoptic#top
+
+{Embed}
+https://code4rena.com/audits/2024-04-panoptic
+Panoptic | Code4rena
+$120,000 in USDC
+1 April 8:00 PM—22 April 8:00 PM
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/c4-og-v2-48F35.png
+
+{Reactions}
+🔥 (3) ☕ (2) 
+
+[04/01/2024 16:13] kartoonjoy
+Pinned a message.
+
+
+[04/01/2024 20:02] C4 (pinned)
+**Automated Findings / Publicly Known Issues**
+
+Reminder: all [Automated Findings / Publicly Known Issues](https://github.com/code-423n4/2024-04-panoptic#automated-findings--publicly-known-issues) are out of scope and ineligible for awards.
+
+{Embed}
+https://github.com/code-423n4/2024-04-panoptic
+GitHub - code-423n4/2024-04-panoptic
+Contribute to code-423n4/2024-04-panoptic development by creating an account on GitHub.
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/391ffb6e-8cc8-4adb-ad43-730ff8f0926e-AC800
+
+
+[04/01/2024 20:07] harryfutures
+Hello, I’m having issues cloning the repo, can anyone help me out
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/IMG_1906-65531.jpg
+
+
+[04/01/2024 21:16] 0xsorrynotsorry
+Pinned a message.
+
+
+[04/01/2024 23:18] satanic_angel_
+Hey, is anyone facing this hurdle with the repo? @dyed | Panoptic any idea
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/Screenshot_2024-04-02_at_4.47.52_AM-D8C94.png
+
+
+[04/02/2024 02:20] kingx0001
+`foundryup` will fix it
+
+
+[04/02/2024 06:21] kirobrejka_80610
+which of those is the one we should follow? @dyed | Panoptic
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-8C844.png
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-2F675.png
+
+
+[04/02/2024 08:42] olanre_waju
+the comment is correct
+
+{Reactions}
+❤️ 👍 
+
+[04/02/2024 12:00] senyab
+@dyed | Panoptic
+
+
+[04/02/2024 12:00] senyab
+If the Put Option goes below the strike, why we suddenly owe the seller in different currency?
+
+
+[04/02/2024 12:00] senyab
+What causes such a behaviour?
+
+
+[04/02/2024 12:55] dyedm1
+Because you borrowed a Uniswap V3 LP position from the seller, and that position sells tokens as the price moves across it. So if I mint a 20-tick-wide 1000 USDC long put on ETH/USDC at p=1025, I borrow an LP position composed of 1000 USDC and burn it. If the price moves across the position to p=985, the position buys ETH with all of its USDC at an average price of 1000, so that position is worth 1 ETH. To pay back the seller, you need to mint the position in Uniswap again, which now requires 1 ETH instead of 1000 USDC.
+
+
+[04/02/2024 19:38] kirobrejka_80610
+Can you explain a lil bit more about the tokenId packing and the whole idea of the legs?@dyed | Panoptic
+
+
+[04/02/2024 20:18] 0xstalin
+I have not yet read the code, but from the docs (https://panoptic.xyz/docs/getting-started/options-traders#multi-legged)  I'd infere that each token allows to pack together up to 4 different puts/calls for the same uniPool and same tickSpace, most likely for hedging strategies when is required to open different trades to hedge the risk, but I'm not sure about this, just my thoughts from reading the docs
+
+{Reactions}
+🔥 (2) 
+
+[04/02/2024 22:26] dyedm1 (pinned)
+Yep that's right! Our interface allows users to create option strategies with up to 4 different long/short put/calls in one option mint. This improves UX, gas efficiency, and allows users to lock in a lower collateral requirement on certain types of option strategies (such as call/put spreads and short strangles). Each leg in a position has a risk partner, which can either be set to its own index or that of another leg. If two risk partnered legs have a lower risk combined than individually in some way (for spreads this means that the short leg has limited risk because the long leg hedges it out at some point, and for short straddles/strangles only one leg can be in loss at any given time).
+
+Each tokenId has a 64-bit Uniswap pool identifier portion, 48 bits of that is a "pool pattern" which is a unique identifier derived from the pool's address and 16 bits of that is used to store the `tickSpacing` of the Uniswap pool (to save gas). The rest is four 48-bit slots that can be filled sequentially with the desired parameters for each leg. A leg contains specifications for a liquidity chunk in Uniswap (equivalent to 1 NFPM/normal LP position in Uniswap) with the `strike`/`width` parameters (which define the tickLower and tickUpper values for the chunk),  whether the leg is short (adding liquidity to Uniswap) or long (removing/borrowing liquidity) with `isLong`, which token to interpret the `positionSize` as (`asset`), the aforementioned risk partner `riskPartner`, whether the leg is a put or call (`tokenType` determines which of the pool tokens is borrowed to create short positions/removed liquidity is swapped into for long positions), and the relative size of the leg (`optionRatio` is interpreted as a multiplier on `positionSize`)
+
+{Reactions}
+👀 
+
+[04/02/2024 23:10] kartoonjoy
+Pinned a message.
+
+
+[04/03/2024 04:08] 0xstalin
+@dyed | Panoptic What are exactly these two categories of liquidity on a univ3 pool?
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-BC670.png
+
+
+[04/03/2024 04:49] 0xstalin
+ooh, i found the answer 🙂
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-3401E.png
+
+
+[04/03/2024 04:49] 0xstalin
+great documentation :chefskiss:
+
+{Reactions}
+10_10 ❤️ 
+
+[04/03/2024 12:39] senyab
+@dyed | Panoptic  Could you explain what is s_miniMedian ? A bit confusing)
+
+
+[04/03/2024 13:17] dyedm1
+`s_miniMedian` is packed data containing 1) a queue with 8 slots (says 7 in some places but it is actually 8) for price observations 2) a mapping of the sorted indices of that queue and 3) the timestamp of the last observation. The format is:
+`[40-bit timestamp][3x8=24-bit sorted queue indices by tick][24x8=192-bit queue with 8 Uniswap ticks]`
+
+
+[04/03/2024 13:20] senyab
+what is ring buffer?
+
+
+[04/03/2024 13:33] dyedm1 (pinned)
+Actually it's more of a queue (in respect to the data layout), but the key point is that it's a FIFO data structure where each new price observation replaces the oldest price observation
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/1920px-Data_Queue-507A4.png
+
+
+[04/03/2024 14:17] kartoonjoy
+Pinned a message.
+
+
+[04/03/2024 14:43] auditor_79099
+what is mean "long option"? "short option"?
+
+{Reactions}
+👎 
+
+[04/03/2024 15:12] guy_in0xnito
+Would be better if search it on internet
+
+
+[04/03/2024 15:15] guy_in0xnito
+Started a thread.
+
+
+[04/03/2024 15:26] dyedm1
+In traditional finance, a "long" option means buying an option and a "short" option means selling an option (a call option is a contract giving the buyer the right to purchase N stock units at price K and a put option is a contract giving the buyer the right to sell N stock units at price K). I attached some payoff graphs below.
+
+In Panoptic, the payoffs of long/short options are similar, but the underlying mechanism is a little bit different. To sell a "short option", you add liquidity to the Uniswap pool, which has a similar payoff as a short option in TradFi. Long option payoffs are the inverse of short option payoffs, so to buy a "long option" in Panoptic you "short" the payoff of a short option by borrowing the liquidity from Uniswap from a seller, removing it, and swapping the removed tokens.
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/main-qimg-0e99cef13ee911e39829e8f308a9dd64-B700C.png
+
+{Reactions}
+❤️ (2) 
+
+[04/03/2024 17:31] _bzee.
+Anyone having this issue??
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/5754977f-cc0d-4dd8-8460-117c09c03ff4-42529.jpg
+
+
+[04/03/2024 17:42] kirobrejka_80610
+`foundryup` and try to build again
+
+{Reactions}
+👍 
+
+[04/03/2024 17:56] 0xdemonnn
+anyone face this error?
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-3CDFB.png
+
+
+[04/03/2024 18:05] ivanfitro
+same but i dont know why
+
+{Reactions}
+🤔 
+
+[04/03/2024 18:14] 0xdemonnn
+any recommendations sir? @dyed | Panoptic
+
+
+[04/03/2024 18:50] dyedm1
+Try a different RPC (Alchemy usually works ok). We usually run the tests off a local node.
+
+
+[04/03/2024 19:14] 0xdemonnn
+alright i will try it, thanks :thankyou:
+
+
+[04/03/2024 20:37] moeid3
+is there any failed tests when running `forge test` or is it just my problem?
+
+
+[04/04/2024 02:42] auditor_79099
+what is mean "swappedAmount - (shortAmount - longAmount)"?
+
+
+[04/04/2024 05:34] web3tycoon
+is everything in the src in scope
+
+{Reactions}
+✅ 
+
+[04/04/2024 05:35] 0xstalin
+
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-F8C86.png
+
+
+[04/04/2024 07:02] guy_in0xnito
+Has anybody gone through the MATH.muldiv and can explain me to be at least what is going on just a basic level @dyed | Panoptic
+
+
+[04/04/2024 09:19] jecikzerrikan
+Hello, @dyed | Panoptic, maybe it is not strictly related to the audit itself, but just out of curiosity. Normally in tradFi the option premium is the way to price in the risk (one of the factors to be included in the premium) that the sellers can control. This way if there is a certain demand for certain option characteristics (regardless if it is put or call) and limited supply the premiums will rise for those options and that is controlled by the sellers. But here it is not the case, the premium is strictly controlled by the characteristics of the position that the seller minted. in other words the sellers will have the incentive to mint options that bring most out of the univ3 positions and rarely go ITM. While the buyers might have demand for options with different characteristics - ones that have high chance of going ITM. And while there is no seller controlled premium to match this supply and demand, how is that going to work? 
+
+It could end up that you have just option sellers who sell wide ranges options, but there would be no buyers for those, because buyers could dement short ranges options. In the end that would end up as platform for leveraged univ3 positions.
+
+
+[04/04/2024 09:27] web3tycoon
+@dyed | Panoptic i need help understanding the defination of `put` and `call` options
+so i have come up with scenarios please help me understand
+1. Lets say tokenA spot price is 750 at the moment, so a put option is concentrating liquidity  close to the spot price, so for example 760 or 740
+2. for call option is placing further away from the spot price. lets say 1000 and 500
+- is this true
+
+
+[04/04/2024 09:28] jecikzerrikan
+Try this: https://atise.medium.com/liquidity-provider-strategies-for-uniswap-v3-options-ce6748c5b1b4, just ignore the math for now
+
+{Embed}
+https://atise.medium.com/liquidity-provider-strategies-for-uniswap-v3-options-ce6748c5b1b4,
+
+{Reactions}
+👍 (2) 
+
+[04/04/2024 11:39] senyab
+@dyed | Panoptic  Explain please in what cases i need to set the ```tickLimitLow/High``` int24 (The lower price slippage limit when minting an ITM position (set to zero for no swapping))
+
+
+[04/04/2024 11:40] senyab
+What is the purpose of it?
+
+
+[04/04/2024 13:33] senyab
+@dyed | Panoptic Could you please logic behind the  in the initializeAMMPool. Why we need to iterate through it ? Why we can't just simply retrieve the pool?
+```
+while (address(s_poolContext[poolId].pool) != address(0)) {
+            poolId = PanopticMath.incrementPoolPattern(poolId);
+        }
+```
+
+
+[04/04/2024 13:41] alexander_orjustalex
+Anyone aware of what those seeds must be? positionPriceSeed and etc. ?
+
+
+[04/04/2024 13:43] santiellena
+The `poolId` is calculated from the pool address. However, since only 48 bits of the address are taken, it may be the case that two pool addresses return the same `poolId` (which should not happen). Check the comments in the code, it's better explained there.
+
+{Reactions}
+🔥 (2) 
+
+[04/04/2024 13:45] santiellena
+If that sounds weird, reading how bitwise operators work in the Solidity documentation helped me a lot: https://docs.soliditylang.org/en/v0.8.23/cheatsheet.html#order-of-precedence-of-operators
+
+
+[04/04/2024 14:29] michalbk
+Anyone got this?
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-C60D3.png
+
+
+[04/04/2024 14:35] jovi6132
+Add the --via-ir flag to the command
+
+
+[04/04/2024 14:36] michalbk
+already done this, doesn't work
+
+
+[04/04/2024 14:40] dyedm1
+This is the intrinsic value of the position you're creating, which is part of the amount of tokens that needs to be settled between you and the pool (that amount also includes the commision fees). When you create an OTM short option, this value should be roughly zero, but when you create an ITM short option, some of the tokens you borrowed won't be needed to create the position, so that amount is credited to you. When you create an OTM long option, the value should also be close to zero, but if you create an ITM long option, the intrinsic value is positive and you need to hold more tokens against your position than the liquidity chunk you removed from Uniswap, so those tokens will be debited from your account.
+
+The swappedAmount is the amount of tokens moved from/to the Uniswap pool, the short amount is the amount of tokens borrowed from PLPs, and the long amount is the amount of tokens you need to hold against your LP position debt to the option seller.
+
+
+[04/04/2024 14:42] dyedm1
+Read this: https://xn--2-umb.com/21/muldiv/
+
+{Embed}
+https://xn--2-umb.com/21/muldiv/
+Math & Engineering
+Random collections of my notes and articles over the years, mostly about maths and/or engineering.
+
+
+[04/04/2024 14:43] jovi6132
+You could try it with --ir-minimum flag, sometimes it works
+
+
+[04/04/2024 14:44] jovi6132
+Otherwise refactoring should do the trick. Will see if I can get it to work when I'm at my pc
+
+
+[04/04/2024 15:14] dyedm1
+It's true that selling deep ITM or OTM options are not incentivized in Panoptic (nor are they in Uniswap) because the options sellers only earn premium in range. Sellers will tend to sell at or near-the-money options at varying widths based on their risk profile/opinion on future volatility. There are reasons to buy and sell narrow and wider-range options -- narrow option ranges behave like close-to-expiry options and wide ranges behave like options further from expiry (gamma increases as options approach expiry,  which is why that gradual curve between the upper and lower ticks you see for wide options compresses into a sharp corner as the ticks get closer together)
+
+{Reactions}
+thankyou 
+
+[04/04/2024 15:18] dyedm1
+No, put options and call options can actually be bought/sold on the *same liquidity chunk*. The key differentiation between the two are the *other* legs in your strategy.  For example, if you're selling an option want to get a call payoff on the ETH/USDC pool, you would borrow ETH to create your position, and if you wanted a put payoff you would borrow USDC. If you're buying an option, you would remove liquidity from Uniswap and convert the tokens to ETH to create a call, and convert them to USDC to create a put.
+
+
+[04/04/2024 15:28] dyedm1
+(it's not set to zero for no swapping, it's set to zero for no limit)
+The SFPM checks if the price at the end of your option mint/burn is within the bounds you set. The reason for this is to prevent frontrunning or otherwise poor execution -- suppose you want to mint an OTM long call at s=1000 because you are betting that the price of ETH will rise to 1500, but somebody manipulates the pool price (or it rises organically) to 1500 before you execute your transaction. That frontrunner takes the profit you could have earned if ETH rose to 1500, and now you need the price to hit 1500 to break even.
+
+
+[04/04/2024 15:37] dyedm1
+The poolId is composed of a 48 bit pool pattern (derived from the pool's address) and a 16 bit tickSpacing, so for any given tickSpacing there are only 281,474,976,710,655 possible different pool patterns, meaning that you can fairly trivially find a colliding pair of pool patterns with the same tickSpacing. However, you realistically cannot create 281,474,976,710,655 pools, so we can just increment the pool pattern until we find one that hasn't been used yet.
+
+
+[04/04/2024 15:39] dyedm1
+These are just random numbers generated by Foundry when calling the test functions that are compressed into a range of usable values in the test and used to configure different aspects of the test scenario.
+
+
+[04/04/2024 15:44] dyedm1
+If you want this to compile in the coverage profile you can try caching legPremia into another variable before that large expression (e.g. LeftRightSigned _legPremia = legPremia), but I wouldn't bother. The coverage has a lot of false negatives/positives and in general is not very accurate (especially with fuzz tests) so it probably won't give you much alpha (this is also why it is not included in the contest repo).
+
+
+[04/04/2024 16:56] auditor_79099
+Hi, @dyed | Panoptic , excuse me, could u pls explain what is the role of the _mintFullRange in Factory?
+
+
+[04/04/2024 18:46] mladenov0603
+Are there any docs about deployment of a new pool?
+
+
+[04/04/2024 20:20] dyedm1
+It seeds the pool with some full-range liquidity, preventing liquidity gaps and ensuring you can swap smoothly across the whole range
+
+
+[04/04/2024 20:51] liffidmonky
+Hi where can I check and get a deeper understanding of what this contracts multiplier per leg is?:  
+```
+   /// @return The number of contracts multiplier for leg `legIndex`
+```
+Its in the optionRatio part of the TokenId type.
+
+
+[04/05/2024 05:40] auditor_79099
+@dyed | Panoptic  how can dNFT holders get receive profit from dNFT?
+
+
+[04/05/2024 09:39] olanre_waju
+The amountMoved is the amount of tokens in the liquidity chunk when out-of-range on either side (amount0 is when CT < tL, amount1 is when CT > tU)
+The `asset` parameter is which token the `positionSize` is determined as (so is the position size specified in token1 or token0)
+The `optionRatio` is just a per-leg multiplier for the positionSize, so if you want to make 1 leg 3x larger than the other, you could give that leg a ratio of 3 and the other an option ratio of 1
+
+
+@dyed | Panoptic explains it like this.
+
+{Reactions}
+👍 (2) 
+
+[04/05/2024 13:38] dyedm1
+There is no such mechanism -- it's just a collectible reward for deploying a pool. The NFT isn't in the scope of the audit besides the call made from `PanopticFactory`
+
+
+[04/05/2024 14:17] senyab
+@dyed | Panoptic the flipToBurnToken function just "flip" the tokens from the long to short?
+
+
+[04/05/2024 14:25] dyedm1
+The `isLong` parameter for each active leg is flipped, so if you have a token with one short leg, it becomes one long leg and vice versa, and if you have a token with the first leg short and the second leg long, the first leg becomes long and the second short. This is used burning positions since the opposite (mint/burn liquidity) action is being performed in Uniswap.
+
+{Reactions}
+🤝 
+
+[04/05/2024 15:49] senyab
+@dyed | Panoptic  Could you explain pls the logic behind rounding up/down the fees? 
+
+```
+round down current fees base to minimize Δfeesbase
+        // If the current feesBase is close or identical to the stored one, the amountToCollect can be negative.
+        // This is because the stored feesBase is rounded up, and the current feesBase is rounded down.
+```
+
+
+[04/05/2024 15:58] senyab
+```
+// moved will be negative if the leg was long (funds left the caller, don't count it in collected fees)
+            uint128 collected0;
+            uint128 collected1;
+            unchecked {
+                collected0 = movedInLeg.rightSlot() < 0
+                    ? receivedAmount0 - uint128(-movedInLeg.rightSlot())
+                    : receivedAmount0;
+                collected1 = movedInLeg.leftSlot() < 0
+                    ? receivedAmount1 - uint128(-movedInLeg.leftSlot())
+                    : receivedAmount1;
+            }
+```
+And why the movedInLeg will be negative?
+
+
+[04/05/2024 16:10] dyedm1
+We use a different method to compute the fees than Uniswap does -- while we compute the total accumulated fees at the base feeGrowth value and the current total accumulated fees and take the difference to find the fees owed to a chunk, Uniswap takes the difference of the feeGrowth values themselves and *then* computes the corresponding amount of tokens from that value. The reason we do it this way is because it's cheaper to store the token0 and token1 base fees (which are <2^128-1) in a single 256-bit slot than storing the growth in two separate slots.Because the growth accumulator for each token is an X128, they need 256 bits of storage each. 
+
+These approaches differ in precision -- our approach can lose more precision than Uniswap's approach in certain cases because we essentially floor the accumulators twice to calculate the base and current token amounts rather than once to convert the feeGrowth delta to a token amount. The inequality `[A] - [B] <= [A-B]` is not true, so this can sometimes lead to our calculated fees being higher than Uniswap's. To correct this, we do `floor(A) - ceil(B)` instead, which ensures that our calculated fees will never be greater than the fees earned by our liquidity in Uniswap.
+
+
+[04/05/2024 16:13] dyedm1
+The signs of token deltas returned by Uniswap indicates their direction.
++: Tokens moving *to* Uniswap
+-: Tokens moving *from* Uniswap
+
+
+[04/05/2024 18:13] mladenov0603
+How `salt` is determened in `deployNewPool` ?
+
+
+[04/05/2024 18:39] dyedm1
+The user supplies the salt, it can be any value as long as it starts with their address.
+
+
+[04/05/2024 18:43] mladenov0603
+And what is used for? Are there any docs about `deployNewPool` function, i can't find any docs about it
+
+
+[04/05/2024 18:49] dyedm1
+If you read the code, that salt is used in the CREATE2 for the `PanopticPool` proxy (so you can use it to mine rare/vanity `PanopticPool` addresses). That function has NatSpec, there's no specific docs beyond that tho.
+
+
+[04/05/2024 20:01] novamanbg
+Hello, just to clarify, in order to create a long leg a user should have a short one already made?
+
+
+[04/05/2024 20:08] ali_shehab.
+I think the pool should have an open short position, not necessarily the same user
+
+
+[04/05/2024 21:16] dyedm1
+Yes, to buy an option some person(s) must have sold an option leg with the same strike, width, and tokenType. Buyers can (cumulatively) mint up to 90% of the liquidity sold for a given chunk.
+
+{Reactions}
+🫡 
+
+[04/06/2024 06:45] auditor_79099
+What is the relationship between tickspacing and strike price?
+
+
+[04/06/2024 06:54] auditor_79099
+And difference between tokenType and asset in tokenId?
+
+
+[04/06/2024 07:01] 0xstalin
+Hope this helps:
+`strikePrice` is bounded within two ticks, each of those ticks must be valid ticks in the UniV3Pool, so, when those ticks were computed they used the `tickspacing` set on the Univ3Pool to determine the tickLow and tickUpperbounding the strikePrice
+If I misunderstood smth pls correct me
+
+
+[04/06/2024 07:14] senyab
+@dyed | Panoptic  dm you
+
+
+[04/06/2024 08:02] senyab
+Who struggle to understand how options work, check it.
+
+https://twitter.com/cambrioleurSB/status/1775389825618546703
+
+{Embed}
+https://twitter.com/cambrioleurSB/status/1775389825618546703
+Sem.B (@cambrioleurSB) on X
+For those of you who doing Panoptic contest on the
+@code4rena, it is beneficial to refresh the knowledge about how the options works. Check these nice videos 👇🏼
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/GKNzodHXsAAaf9W-D3F59.jpg%3Alarge
+Twitter
+
+
+[04/06/2024 08:13] senyab
+@everyone Could someone explain the logic of this peace of code ?
+
+```
+// moved will be negative if the leg was long (funds left the caller, don't count it in collected fees)
+            uint128 collected0;
+            uint128 collected1;
+            unchecked {
+                collected0 = movedInLeg.rightSlot() < 0
+                    ? receivedAmount0 - uint128(-movedInLeg.rightSlot())
+                    : receivedAmount0;
+                collected1 = movedInLeg.leftSlot() < 0
+                    ? receivedAmount1 - uint128(-movedInLeg.leftSlot())
+                    : receivedAmount1;
+            }
+```
+
+
+[04/06/2024 08:15] senyab
+How the liquidity of the movedInLeg could be 0?
+
+
+[04/06/2024 08:30] paulbirnbaum
+Hi @dyed | Panoptic .
+I've read and understand most of the docs but a question remains. 
+
+What is the point of using Uniswap v3 at all if there are PLPs, Buyers, and Sellers for Panoptic Pool? 
+
+The only actual reason that I found is that the PLPs don't necessarily deposit liquidity in the token the Sellers/Buyers want to trade, but in that case, we could just proceed to a swap on Uni instead of depositing Liquidity when Sellers create a Position and Remove it when Buyer purchase that position.
+
+
+[04/06/2024 09:34] senyab
+Is it right formula?
+
+premium0X64_base = Math.mulDiv(
+                    collected0,
+                    totalLiquidity * 2 ** 64,
+                    netLiquidity ** 2
+                );
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/Screenshot_2024-04-06_at_11.34.34-81FB5.png
+
+
+[04/06/2024 09:37] liffidmonky
+@dyed | Panoptic  what does it mean for `all chunks in the position must be discrete` in a token ID position?
+
+
+[04/06/2024 09:39] auditor_79099
+when is uniswapV3MintCallback() called and who calls?
+
+
+[04/06/2024 10:33] honour_d_dev
+the uniswap pool, from the mint function
+
+{Reactions}
+👍 
+
+[04/06/2024 10:38] honour_d_dev
+I think its because providing liquidity on uniswapv3 is just like selling an option basically, and option sellers are basically just providing liquidity on v3 but through panoptic 
+@dyed | Panoptic correct?
+
+{Reactions}
+👀 👍 
+
+[04/06/2024 13:56] _kfx
+@dyed | Panoptic is there a particular reason factory has a separate `initialize` function? why not do everything in the constructor?
+
+
+[04/06/2024 17:15] 0xstalin
+@dyed | Panoptic  Could you help me to understand the relationship between these two variables of the tokenId?
+
+`isLong` represents if the leg is for selling or buying an option?  
+`tokenType` is to indicate the type of operation, either a put or a call?
+
+For example, `isLong == 1` && `tokenType == 0` it would indicate to buy a short?
+
+
+[04/06/2024 17:20] auditor_79099
+what is the difference between the put and call option?
+
+
+[04/06/2024 17:22] 0xstalin
+put == short
+call == long
+
+{Reactions}
+❌ 
+
+[04/06/2024 17:22] jecikzerrikan
+I watched this one before the audit: https://youtu.be/NW1ziUDjB7w?si=NI3SaiQ088OyGq50, pretty good explanation with examples
+
+{Embed}
+ClearValue Tax
+https://www.youtube.com/watch?v=NW1ziUDjB7w
+Options Trading For Beginners: Complete Guide with Examples
+For Exclusive Content on Options, Stocks, and Crypto, please visit our website: https://clearvalueinvesting.com/
+
+GET 3 FREE STOCKS when you open up a stock account here: https://a.webull.com/i/ClearValueTax
+
+Options For Beginners Series:
+Call Options Explained: https://youtu.be/kC28MuQPyu8
+Put Options Explained: https://youtu.be/tlcCPX4t9y0
+Cov...
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/maxresdefault-0F538.jpg
+
+
+[04/06/2024 17:23] jecikzerrikan
+not really, by shorting they mean selling, and you can sell a put and a call as well
+
+{Reactions}
+🧐 👍 
+
+[04/06/2024 17:23] auditor_79099
+could u please simplely explain?
+
+
+[04/06/2024 17:30] 0xstalin
+https://www.investopedia.com/terms/s/short-put.asp
+
+https://www.investopedia.com/terms/s/short-call.asp
+
+{Embed}
+https://www.investopedia.com/terms/s/short-put.asp
+Short Put: Definition, How It Works, Risks, and Example
+A short put is when a put trade is opened by writing the option.
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/dotdash_Final_Short_Put_Apr_2020-01-c4073b-74852.jpg
+
+{Embed}
+https://www.investopedia.com/terms/s/short-call.asp
+What Is a Short Call in Options Trading, and How Does It Work?
+A short call is a strategy involving a call option, giving a trader the right, but not the obligation, to sell a security.
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/shutterstock_67023106-5bfc2b9846e0fb005144-62A96.jpg
+
+
+[04/06/2024 17:31] 0xstalin
+so there are?
+
+short puts
+short calls
+
+long puts
+long calls
+
+
+[04/06/2024 17:31] jecikzerrikan
+exactly
+
+{Reactions}
+👁️ 
+
+[04/06/2024 17:33] jecikzerrikan
+those are my notes
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/Screenshot_2024-04-06_at_19.32.47-56CF8.png
+
+
+[04/06/2024 17:33] 0xstalin
+on Panoptic, the seller would be opening positions either, short puts or short calls, and the buyers would be purchasing long calls or long puts?
+
+
+[04/06/2024 17:34] jecikzerrikan
+exactly, and in Panoptic the difference between put and call is on which side of the currentTick the liquidity is deployed
+
+{Reactions}
+👁️ thankyou ❌ 
+
+[04/06/2024 17:35] jecikzerrikan
+so seller, deploys the liquidity (pool -> uni), the buyer brings the liquidity back (uni -> pool)
+
+{Reactions}
+chefskiss ✅ 
+
+[04/06/2024 17:35] 0xstalin
+awesomeee, I wasn't that lost then, i was just confusing the exact terminology haha
+Thanks for sharing
+
+
+[04/06/2024 17:36] jecikzerrikan
+yeah, that got me confused in the beginning as well, normally I was aware only how option buying looks like, but here is also the selling point of view
+
+
+[04/06/2024 19:16] dyedm1
+The `width` is specified in units of `tickSpacing`, so the distance of the lower tick from the strike is `floor(width*tickSpacing/2)` and the upper tick is `ceil(width*tickSpacing/2)`. Also, the resulting lower and upper ticks must be multiples of tickSpacing.
+
+
+[04/06/2024 19:16] dyedm1
+See the pinned msg for information about the different parameters
+
+
+[04/06/2024 19:17] dyedm1
+I have my DMs off, can you make a private thread instead and send whatever your question is there?
+
+
+[04/06/2024 19:24] dyedm1
+If `movedInLeg` is positive, that means liquidity was added to Uniswap and tokens were transferred from the caller to the Uniswap pool, so no further action is needed. However, if it is negative, that means liquidity was removed from the Uniswap pool and the constituent tokens of that liquidity must be collected, so the absolute value of those tokens is added to amounts we collected from the pool. `collected0` and `collected1` refer only to the amount of premium collected from the pool, and not any tokens  that were swept from burnt liquidity, so we subtract the absolute value of `movedFromLeg` if it is negative (meaning that it is included in the final `receivedAmounts`) from `receivedAmounts` in order to compute those.
+
+
+[04/06/2024 19:26] dyedm1
+Yes, I think that's the one in our Desmos. You should be able to get the expressions from the SFPM (what you posted is only part of the full formula) to match if you simplify them.
+
+
+[04/06/2024 19:27] dyedm1
+Each active leg in a tokenId must have a different combination of strike, width, and tokenType
+
+
+[04/06/2024 19:37] dyedm1
+You're correct that if, at some point, buyers have borrowed 100% of the liquidity in a given chunk, there would be little practical difference between the current system and just using Uniswap for swap liquidity and a source of truth. However, in the current system, sellers can add liquidity and start earning premium without needing buyers, and will continue earning premium on the portion of their liquidity sellers have not purchased (we only allow 90% utilization of a liquidity chunk anyway). So for sellers, Panoptic enhances LPing on Uniswap V3 with the same core experience but with more leverage and payoff manipulation through undercollateralized lending. That part doesn't require buyers and sellers can still find value in that, but their returns are enhanced further if someone borrows their liquidity. Overall it's just way better UX if sellers don't need to match with a buyer for 100% of their liquidity, and instead just have it available to borrow on demand with the same payoff but increased fee returns.
+
+
+[04/06/2024 19:44] dyedm1
+We have a novel contract deployment method that enables the functionality of CREATE3 without the convoluted derivation path of the EL implementation used currently, but it does not run initcode in the deployment frame (so any constructor logic/state setup outside of setting immutable variables). So we put the owner setup in a separate function instead that can be called in the same transaction after the contract is deployed.
+
+{Reactions}
+🤯 
+
+[04/06/2024 19:47] dyedm1
+Essentially (although buying a short is an oxymoron, did you mean buying a put?). Whether the option is considered a put or a call depends on what you consider to be the numeraire of the pool and what tokens 0 and 1 are, see the pinned message for more info on the parameters.
+
+{Reactions}
+👀 
+
+[04/06/2024 19:51] dyedm1
+this is not true, that's the difference between ITM and OTM. The difference between put and call is the other leg of your strategy. For sellers this is which token you borrow to create your position (if the position is ITM you will swap the tokens you borrowed into the constituent tokens of the liquidity chunk at that time), and for buyers, this is which token you hold against your LP position debt (and again if the position is ITM you would swap the other tokens received from burning the LP position you borrowed into that token).
+
+
+[04/06/2024 21:02] donkicha
+```
+donko@DESKTOP-L2NMHUV:~/2024-04-panoptic$ forge build
+──────────────
+✖ 'build' is not a valid subcommand. See 'forge --help'
+──────────────
+ℹ Did you mean this?
+  - forge block
+  - forge help
+  - forge join
+  - forge ls
+  - forge tx:ls
+  - forge use
+donko@DESKTOP-L2NMHUV:~/2024-04-panoptic$ 
+
+```
+
+
+
+Anyone have an idea why is this and how to fix it?
+
+
+[04/06/2024 21:03] donkicha
+Thank you in advance!
+
+
+[04/06/2024 21:06] 0xstalin
+ah yeah, pardon my dyslexia, that's what I wanted to say, so, buying a put would be the same as a long put?
+
+
+[04/06/2024 21:13] dyedm1
+You have another program installed on your PATH with the `forge` command, uninstall that and follow the instructions at https://getfoundry.sh/
+
+{Embed}
+https://getfoundry.sh/
+Foundry
+
+
+[04/06/2024 21:13] dyedm1
+Yes
+
+{Reactions}
+thankyou 
+
+[04/07/2024 00:04] thevanquiser
+Could I DM?
+
+
+[04/07/2024 01:34] dyedm1
+I don't have my DMs open, please create a private thread
+
+
+[04/07/2024 06:38] dinesh11g
+forge coverage worked for anyone ? any solution ?
+
+
+[04/07/2024 08:56] _kfx
+no luck
+
+by the way, there's a way how to successfully run the tests without the `ci_test` profile: make this change in the code:
+```
+diff --git a/test/foundry/core/PanopticFactory.t.sol b/test/foundry/core/PanopticFactory.t.sol
+index 29cae82..c09f581 100644
+--- a/test/foundry/core/PanopticFactory.t.sol
++++ b/test/foundry/core/PanopticFactory.t.sol
+@@ -93,7 +93,7 @@ contract PanopticFactoryTest is Test {
+     ];
+ 
+     // granted token amounts
+-    uint256 constant INITIAL_MOCK_TOKENS = type(uint256).max;
++    uint256 constant INITIAL_MOCK_TOKENS = type(uint224).max;
+ 
+     // store some data about the pool we are testing
+     IUniswapV3Pool pool;
+```
+the reason is that a recent version of USDC stores the address blacklist status in the most significant byte. by reducing the number of tokens dealt so that the MSB remains zero, the blacklist status is not affected.
+
+
+[04/07/2024 09:15] liffidmonky
+@dyed | Panoptic to become a passive PLP you just mint any kind of position in a pool?
+
+
+[04/07/2024 09:24] jecikzerrikan
+oh I see, so that means that I could sell an option, whose range would be above the current tick. Now I could borrow either token0 or token1, and that determines if it is a put or call. In case the tokens that are above the tick are different than the chosen (either token0 or token1) they will be swapped. Is this correct @dyed | Panoptic ? Or is it the tokenType that decides? If that is the case, is the only difference between put or call - the token that you have to return when you close the short?
+
+
+[04/07/2024 10:19] _kfx
+the way I understand this
+what Panoptic calls "option selling" is just LP'ing, but with leverage (i.e. borrowed assets)
+if you're more familiar with LPing in Uniswap v3 than options it's more intuitive to mentally replace the option terms with LP terms
+example: let's say there's ETH/USDC pool
+if on Uniswap v3 you provide liquidity in that pool, that's like "selling" a put option on ETH, i.e. you have a short put in Panoptic terms
+if you provide liquidity worth $x AND short $x worth of ETH at the same time, that's like "selling" a call option on ETH, i.e. you have a short call Panoptic terms
+and one way to short the ETH is to borrow it against USDC as the collateral
+Panoptic is the same idea, but it manages the borrowing and swapping for you, and allows "selling" (i.e. LPing in Uni v3) with leverage
+and allows to buy (long) the options, which is not possible in Uniswap v3 on its own
+
+
+[04/07/2024 11:30] donkicha
+```
+donko@DESKTOP-L2NMHUV:~/2024-04-panoptic$ forge test --gas-report
+[⠒] Compiling...
+No files changed, compilation skipped
+Error: 
+Could not instantiate forked environment with fork url: https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY
+
+Context:
+- Error #0: Error during transport: HTTP status client error (401 Unauthorized) for url (https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY)
+- Error #1: HTTP status client error (401 Unauthorized) for url (https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY)
+- Error #2: HTTP status client error (401 Unauthorized) for url (https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY)
+donko@DESKTOP-L2NMHUV:~/2024-04-panoptic$ 
+
+```
+
+
+Anyone else with this issue?
+
+
+[04/07/2024 11:52] moeid3
+go to foundry.toml and replace your own RPC
+
+
+[04/07/2024 13:29] senyab
+Guys, explain pls what is effectiveLiquidityLimitX32?
+
+
+[04/07/2024 13:35] senyab
+and what is netLiquidity?
+
+
+[04/07/2024 13:48] sammytm
+Hope this helps
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-911B4.png
+
+{Reactions}
+🤝 
+
+[04/07/2024 14:03] jecikzerrikan
+yeah, so you say that selling a put would be to provide 1 ETH worth of collateral for the LP position, while selling a call would be to provide  USDC equivalent?
+
+
+[04/07/2024 14:13] _kfx
+not really, as dyed said the type of the asset provided to the Uniswap pool determines whether the "sold" option ITM or OTM
+there can be OTM puts. 
+- in the USDC/ETH example to sell an OTM put you provide USDC to the Uniswap's pool
+there can be ITM puts.
+- to sell an ITM put you provide ETH to the pool
+selling puts is easier to understand because it's what Uniswap LPs are typically doing. but similar idea applies to selling calls
+
+
+[04/07/2024 14:20] jecikzerrikan
+ok, but the ITM or OTM, isn't that rather decided based on the ticks you provide for the position relative to the currentTick? Look, you can provide tickLow tickHigh where both of them are lower than the current tick - you provide USDC. That from the put seller perspective would be minting an ITM put option. However if you provide same ticks but with ETH instead that would be an OTM selling call, isn't it?
+
+
+[04/07/2024 14:21] jecikzerrikan
+by "providing" here I mean really setting the "asset" in the tokenId leg to either token0 (USDC) or token1 (ETH)
+
+
+[04/07/2024 14:22] jecikzerrikan
+because in reality it will be USDC that is deployed
+
+
+[04/07/2024 14:22] jecikzerrikan
+due to the relative position to the currentTick
+
+
+[04/07/2024 14:22] _kfx
+sounds correct!
+
+
+[04/07/2024 14:23] jecikzerrikan
+thanks. So now did you figure how is the tokenType functioning with relation to all that? 🙂
+
+
+[04/07/2024 14:43] jecikzerrikan
+The only thing I found is that it defines which side is the OTM and which is ITM
+
+
+[04/07/2024 14:48] _kfx
+Started a thread.
+
+
+[04/07/2024 15:55] senyab
+1. What is settled tokens?
+
+
+[04/07/2024 21:46] sammytm
+tokens owed to options sellers that have been settled (by option buyers as premium)
+
+
+[04/07/2024 23:22] 0xstalin
+could someone take a look at my notes and check if I'm on the right track? I'm trying to simplify and visualize where liquidity moves depending on the type of operation
+
+When minting a short position:     (selling an option)
+- Liquidity is moved to the UniswapV3Pool (startingLiquidity grows)
+
+When minting a long position:      (buying an option)
+- liquidity is moved out of uniswap (startingLiquidity shrinks) and removedLiquidity is increased because liquidity was borrowed from Uniswap
+                
+                
+
+When burning a short position:     (closing a seller's option)
+- liquidity will be moved out of uniswap  (startingLiquidity shrinks) and removedLiquidity is remains the same because for a short position there was not required a borrow
+                
+
+When burning a long position:      (closing a buyer's option)
+- liquidity is added back to the UniV3Pool (startingLiquidity grows) and removedLiquidity shrinks because the owed liquidity is repaid and re-added to the UniV3Pool!
+
+
+[04/08/2024 08:33] sammytm
+Yeah, seems good!
+
+
+[04/08/2024 10:29] jcfichtner
+is there analysis and gas awards for this contest?
+
+
+[04/08/2024 10:43] pkqs90
+Hi guys, also want to check if my understanding of the protocol is correct. For selling puts, what is happening is user moves USDC from panoptic to univ3, if price moves down (ITM), then the position in univ3 would be converted to ETH (which is less in value than original amount of USDC borrowed), and user has to reimburse panoptic the dropped price delta, which he ends up losing. For buying puts, user moves USDC from univ3 to panoptic, if price moves down (ITM), user only has to send ETH back to univ3, which would be cheaper than the amount of USDC in the beginning, and the user gains this price increase for himself?
+
+The two invariants here would be: 1. for buying/selling puts, it always operates on USDC (for calls, its ETH), no matter it is ITM or OTM, 2. the balance of Panoptic protocol does not change, and user gain/lose profits from "arbitraging" between univ3 pool positions. Is this correct?
+
+
+[04/08/2024 11:15] kaveyjoe
+https://discord.com/channels/810916927919620096/958800160870240286/1221927677510946977
+
+
+[04/08/2024 11:21] guy_in0xnito
+Guys who have through the code base 
+I need to know that are we using uniswapTickMath or just custom lib 
+?
+
+
+[04/08/2024 12:42] liffidmonky
+@dyed | Panoptic where are comissions for PLPs charged? on the `takeCommissionAddData()` function of collateralTracker?
+
+
+[04/08/2024 12:50] liffidmonky
+are comission fees the same as the option premia? https://panoptic.xyz/docs/panoptic-protocol/commission
+
+{Embed}
+https://panoptic.xyz/docs/panoptic-protocol/commission
+Commissions | Panoptic
+How Panoptic calculates commissions
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/website-banner-E9E8A.png
+
+
+[04/08/2024 12:52] sammytm
+Nope
+
+
+[04/08/2024 13:43] senyab
+could someone explain why in the getAmountsMoved that amount0 and amount1 calculates differently?
+
+
+[04/08/2024 15:13] senyab
+I am struggle to understand what role 'swap' plays during the creation/buring of the option. I would appreciate if smone explain how the ITM option could be minted and what role the swap plays here. I am stuck on the "_getExchangedAmount" function
+
+
+[04/08/2024 15:17] dyedm1
+You deposit to one of the `CollateralTracker` vaults without minting any positions
+
+
+[04/08/2024 15:18] dyedm1
+Yes that's correct. The `tokenType` defines the token your debt is denominated in.
+
+{Reactions}
+👍 
+
+[04/08/2024 15:21] dyedm1
+Also includes tokens collected from the Uniswap (on liquidity that has not been purchased/borrowed)
+
+
+[04/08/2024 15:21] dyedm1
+Correct
+
+{Reactions}
+thankyou 
+
+[04/08/2024 15:22] dyedm1
+No, the pool breakdown is as described on the README
+
+
+[04/08/2024 15:25] dyedm1
+That's roughly correct, although I would note that if the option *starts* itm, you borrow USDC but swap some/all of it to ETH (or in the case of buying puts, swap the ETH you receive from burning to USDC and add the difference)
+
+{Reactions}
+👍 
+
+[04/08/2024 15:26] dyedm1
+We use our own library, `Math.sol`, for any logic that requires functions from Uniswap's `TickMath` .
+
+
+[04/08/2024 15:26] dyedm1
+Yes
+
+
+[04/08/2024 15:28] dyedm1
+No, commissions are paid by options buyers and sellers to PLPs when they create a position, premia is streaming and paid from option buyers (& the Uniswap pool) to sellers based on the fees earned by the position in Uniswap
+
+
+[04/09/2024 06:09] guy_in0xnito
+Basically the protcol works around the part of 
+Long/short selling of put or call 
+Right ?
+
+
+[04/09/2024 06:12] phantom_phreak.
+Yup
+
+
+[04/09/2024 12:23] senyab
+why we need to track the effectiveLiquidityLimitX32?
+
+
+[04/09/2024 12:34] senyab
+mintOptions function could be called when there is nothing yet in the positionIdList?
+
+
+[04/09/2024 13:32] guy_in0xnito
+What is riskpartner ?
+@dyed | Panoptic
+
+
+[04/09/2024 13:34] peakycryptos
+see https://discord.com/channels/810916927919620096/1222328860344062024/1224847388720762930
+
+
+[04/09/2024 14:29] sammytm
+the user is supposed to insert the new position in the list beforehand.. from what I have gathered
+
+
+[04/09/2024 14:29] senyab
+through what function ?
+
+
+[04/09/2024 14:31] sammytm
+they need to generate the desired position themselves
+
+
+[04/09/2024 14:32] sammytm
+i think there's a function to generate a tokenId in TokenId.sol
+
+
+[04/09/2024 14:58] senyab
+could someone explain the logic of minting in ITM?
+
+
+[04/09/2024 15:02] santiellena
+this guy explains very well everything about options: https://www.youtube.com/watch?v=0GSB5YZx9ZE&t=5325s
+
+
+[04/09/2024 15:03] santiellena
+why minting in the money and how that option is priced is all there
+
+
+[04/09/2024 15:05] santiellena
+hope that helps!
+
+
+[04/09/2024 15:20] senyab
+1h 28m?
+
+
+[04/09/2024 15:20] senyab
+@santiellena
+
+
+[04/09/2024 15:21] santiellena
+oh no, hahah I didn't realize I shared it with the minutes of the video. just wanted to share the video
+
+{Reactions}
+🤝 
+
+[04/09/2024 16:32] radev_40364
+Up to 4 different long/short put/calls in one option mint? Isn't it a position mint or I miss something again?
+
+
+[04/09/2024 18:01] jecikzerrikan
+anyone tried to load the code through chisel? I'm getting this error and can't fix it (forge build compiles the code without issues). I also tried the `--via-ir`, but it didn't help: 
+```
+➜ 
+➜ import {TokenIdLibrary} from "contracts/types/TokenId.sol";
+Compiler errors:
+Error: Compiler error (/solidity/libsolidity/codegen/LValue.cpp:55):Stack too deep. Try compiling with `--via-ir` (cli) or the equivalent `viaIR: true` (standard JSON) while enabling the optimizer. Otherwise, try removing local variables.
+CompilerError: Stack too deep. Try compiling with `--via-ir` (cli) or the equivalent `viaIR: true` (standard JSON) while enabling the optimizer. Otherwise, try removing local variables.
+    --> /Users/jecikpo/Projects/2024-04-panoptic/contracts/PanopticPool.sol:1942:65:
+     |
+1942 |                                                     )) + int256(legPremia.rightSlot() * 2 ** 64),
+     |                                                                 ^^^^^^^^^
+
+➜
+```
+
+
+[04/09/2024 18:01] peakycryptos
+Only the hash of all open positions is tracked in storage. Which is validated when creating a new position. The new position to be generated is passed in at the last index of the list
+
+
+[04/09/2024 18:01] dyedm1
+The liquidity utilization determines the multiplier you pay on premium as a buyer, so it's a limit to ensure your multiplier when you open the position doesn't exceed a certain value
+
+
+[04/09/2024 18:02] dyedm1
+Every position can have up to 4 legs, each of which is a long/short put/call. see the TokenId type
+
+
+[04/09/2024 18:03] dyedm1
+If you want this to compile in the coverage profile you can try caching legPremia into another variable before that large expression (e.g. LeftRightSigned _legPremia = legPremia), but I wouldn't bother. The coverage has a lot of false negatives/positives and in general is not very accurate (especially with fuzz tests) so it probably won't give you much alpha (this is also why it is not included in the contest repo).
+
+
+[04/09/2024 18:16] jecikzerrikan
+Thanks, yeah, I tried to fix it through caching, but then immediately it hit another one, so who knows how many of them they are...
+
+
+[04/09/2024 18:22] dyedm1
+Just put this line of code `LeftRightSigned legPremia = legPremia;` above the expression, it should bring the variable `legPremia` back to the top of the stack and compile
+
+
+[04/09/2024 18:25] santiellena
+@dyed | Panoptic why there is an option to let the user mint an option without price slippage checks? I think I'm missing something there
+
+
+[04/09/2024 18:27] dyedm1
+Why not? You can swap in Uniswap without slippage checks if you set the `sqrtPriceLimitX96` outside of the max/min values. You might want to have your own slippage checks if trading through a smart contract for example
+
+{Reactions}
+🫡 
+
+[04/09/2024 18:28] santiellena
+Thanks!
+
+
+[04/09/2024 18:39] jecikzerrikan
+it quickly turns into a quagmire with other variables. Besides I wanted to use chisel for quick tests, not coverage, but I'll managed with the normal tests somehow, thanks anyway.
+
+
+[04/09/2024 18:41] jecikzerrikan
+btw, does anyone know why this happens with chisel/coverage, but not with normal build? They must be using solc in the background, but somehow with different parameters, right?
+
+
+[04/09/2024 18:45] dyedm1
+Coverage happens because it tries to compile without the optimizer to get more accurate sourcemaps. It works in chisel as far as I can tell though, which command did you use? `chisel --prelude contracts`?
+
+
+[04/09/2024 18:48] jecikzerrikan
+just typed in `chisel` and then `import {TokenIdLibrary} from "contracts/types/TokenId.sol";`
+
+
+[04/09/2024 18:54] dyedm1
+Yeah the fix I specified works, I put that line right above the `s_grossPremiumLast` assignment
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-804B5.png
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-FD7E7.png
+
+
+[04/09/2024 18:58] jecikzerrikan
+yep, works this time, I had a typo previously, thanks!
+
+
+[04/10/2024 01:35] dyedm1
+For those that participated in the November SFPM audit and would like to see a diff between that version and the one currently under review, I've posted both here: https://www.diffchecker.com/IfeWP5Hb/
+
+As a reminder, the code for the previous audit can be found at https://github.com/code-423n4/2023-11-panoptic
+
+{Reactions}
+👀 👌 (3) 🔥 (2) 
+
+[04/10/2024 11:22] guy_in0xnito
+Why during updating a submission it says 
+No submission found to edit
+... Is anyone facing this problem
+
+
+[04/10/2024 15:12] jecikzerrikan
+best would be to reach out to C4 team
+
+
+[04/10/2024 17:03] dyedm1
+cc @KnownFact | C4
+
+
+[04/10/2024 17:10] itsmetechjay
+I believe this issue should be fixed now.  Thanks for the flag @dyed | Panoptic.
+
+
+[04/10/2024 20:55] josh4324
+@dyed | Panoptic 
+
+The statement below  from the docs is quite confusing.....Please can you clarify
+
+"If the user chooses to close the position while it is ITM, then they need to "pay back" the 1000 USDC they "borrowed" and get to keep the 1 ETH of liquidity in the Uni v3 pool. In other words, the option seller is obligated to purchase 1 ETH for 1000 DAI, irrespective of the ETH price, but they get to keep the fees generated by that position during the time it was held."
+
+Doc page - https://panoptic.xyz/docs/panoptic-protocol/protocol-roles
+
+This is for selling option in the conditions below
+
+ETH-USDC PUT option at strike K=1000 and width=10%.
+Liquidity is moved from the Panoptic pool and deployed inside the ETH-USDC Uni v3 pool in a range between (909, 1100).
+If the price is above 1100, the position is minted out-the-money (OTM) and will consist entirely of 1000 USDC - It will not earn fees
+As the price decreases and falls within the position's range, the position will earn fees accrued every time a swap happens in the Uni v3 pool
+If the price falls below 909, then the position is fully in-the-money (ITM) and the position will be entirely of 1 ETH.
+
+In The Money means the seller is making profit, i cant seem to see how in the statement highlighted above.
+
+From my study, put options means the user has the right to sell at the strike price, which means the user will make profit when the token price is low by buying it cheap at the current market and use the put option to sell it at the strike price.
+
+{Embed}
+https://panoptic.xyz/docs/panoptic-protocol/protocol-roles
+Protocol roles | Panoptic
+Ecosystem participants include liquidity providers, options sellers, options buyers, and liquidators.
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/website-banner-E9E8A.png
+
+
+[04/10/2024 22:34] dyedm1
+ITM actually means that sellers are losing money (and anyone who purchased that option is making money). The seller of a put owes USDC but their position is composed of depreciating ETH when the position is ITM, while buyers of a put hold a fixed amount of USDC but only have to pay back that amount of ETH in the position (which is worth less the more ITM the position is).
+
+
+[04/11/2024 08:00] senyab
+@dyed | Panoptic  Could you explain why the ITM negative in such case?
+
+```
+For out-the-money options, the collateralization ratio for selling an option is fixed at 20% when pool utilization is less than 50% and (linearly) increases to 100% when pool utilization is 90% or more. For in-the-money (ITM) options, the ITM amount is negative and the user may see their collateral balance increase.
+```
+
+
+[04/11/2024 09:37] liffidmonky
+@dyed | Panoptic why cant users mint the same position twice?: 
+```solidity
+         // disallow user to mint exact same position
+        // in order to do it, user should burn it first and then mint
+        if (LeftRightUnsigned.unwrap(s_positionBalance[msg.sender][tokenId]) != 0) {
+            revert Errors.PositionAlreadyMinted();
+        }
+```
+
+
+[04/11/2024 11:13] subsix
+@dyed | Panoptic Hey, I have one doubt >>>
+I can't understand what exactly happens when [ in case of selling put, spot price < strike price ]  In the docs it is written :: "f the user chooses to close the position while it is ITM, then they need to "pay back" the 1000 USDC they "borrowed" and get to keep the 1 ETH of liquidity in the Uni v3 pool."  whey they need to keep this 1 ETH ? They need to payback the borrowed amount right? which was worth 1000. 
+
+Doc page >> https://panoptic.xyz/docs/panoptic-protocol/protocol-roles
+
+Also in the doc there is missprint, " the option seller is obligated to purchase 1 ETH for 1000 DAI,"  USDC should be there not DAI
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/panoptic_put_sell-4D2C9.png
+
+{Embed}
+https://panoptic.xyz/docs/panoptic-protocol/protocol-roles
+Protocol roles | Panoptic
+Ecosystem participants include liquidity providers, options sellers, options buyers, and liquidators.
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/website-banner-E9E8A.png
+
+
+[04/11/2024 13:40] pkqs90
+For the SFPM, can users access it directly without going through PanopticPool? e.g. Handcrafting tokenIDs and calling it directly. Would this be a use case that is supported?
+
+
+[04/11/2024 13:47] sammytm
+yes
+
+
+[04/11/2024 14:25] subsix
+done, I understood it
+
+
+[04/11/2024 14:35] dyedm1
+The ITM amount is negative when you sell options because the LP position is worth less than the tokens borrowed to create it. Buyers have a positive intrinsic value when options are ITM, so for sellers it's the opposite.
+
+
+[04/11/2024 14:38] dyedm1
+It's a consequence of the way we designed the system. The position's identifier is based on its composition, so there's no way to distinguish identical positions if you try to account for them seperately (unless you introduce a different primary key to identify them). We didn't want to create a separate branch for increasing/decreasing the size of positions either, hence that restriction.
+
+
+[04/11/2024 15:58] santiellena
+Hi @dyed | Panoptic !  I've just created a private thread, when you have time, check it out. Thx!!
+
+{Reactions}
+✅ 
+
+[04/11/2024 22:29] peakycryptos
+The SFPM functions similarly to Uniswap's NFPM. It's a wrapper for Uniswap positions
+
+{Reactions}
+👍 
+
+[04/12/2024 02:20] 0x886699
+
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-3A922.png
+
+
+[04/12/2024 02:21] 0x886699
+after  i  run  forge test . there is error about authentication. anyone konw how to solve this problem  .  thanks
+
+
+[04/12/2024 03:22] dyedm1
+You need to use your own Alchemy API key, you can see the included URL is a template (YOUR_API_KEY)
+
+
+[04/12/2024 03:30] 0x886699
+so need to apply Alchemy API key  in some website?
+
+
+[04/12/2024 04:57] dyedm1
+https://www.alchemy.com/
+
+{Embed}
+https://www.alchemy.com/
+Alchemy - the web3 development platform
+Whether you're a beginner developer, startup, web3 market leader, or a large enterprise, Alchemy makes multichain web3 development easy.
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/1705957019-home-page-og-image_sm-A0025.png
+
+
+[04/12/2024 06:47] 0x886699
+thank you  indeed
+
+
+[04/12/2024 09:16] senyab
+what is token delegation in the liquidation process, why we need to do it? Thanks 🙏
+
+
+[04/12/2024 11:03] pkqs90
+Just to confirm, the `swapInAMM()` function in SFPM should only be used by PanopticPool for maintaining token balance?
+
+
+[04/12/2024 11:35] guy_in0xnito
+Isn't it getting called for minting and burning?
+
+
+[04/12/2024 12:00] liffidmonky
+@dyed | Panoptic  is the owner of the panoptic pool facotry a multi-sig wallet?
+
+
+[04/12/2024 12:46] liffidmonky
+@dyed | Panoptic the donor NFT has no value or does it plan to have any value?
+
+
+[04/12/2024 14:23] dyedm1
+The liquidatee may not have enough/the wrong type of tokens in their account to settle their positions with, so in that case the liquidator lends them tokens to settle their positions and receives the same value back + a bonus
+
+
+[04/12/2024 14:23] dyedm1
+Any SFPM user can take advantage of the functionality provided with that function
+
+
+[04/12/2024 14:23] dyedm1
+Yes ideally
+
+
+[04/12/2024 14:23] dyedm1
+No value
+
+
+[04/12/2024 16:31] evokid
+Respect for all rich comments that explained in the base code 🔥
+
+
+[04/12/2024 17:27] guy_in0xnito
+What i got from the codebase is 
+Protocol is implementing a median  TWAP based oracle system?
+But what are fast/slow cardinality/period?
+
+
+[04/12/2024 17:45] dyedm1
+Yes, the fast/slow cardinality period are different quantities/frequency of observations you can take to create more current or conservative oracle prices
+
+
+[04/12/2024 20:52] irving6969
+how does wrap and unwrap work? I can 't find them in contracts
+
+
+[04/12/2024 21:01] tofunmi
+https://soliditylang.org/blog/2021/09/27/user-defined-value-types/
+
+{Embed}
+https://soliditylang.org/blog/2021/09/27/user-defined-value-types/
+User Defined Value Types in Solidity | Solidity Programming Language
+Posted by Solidity Team on September 27, 2021
+
+{Reactions}
+👍 (2) thankyou 
+
+[04/12/2024 23:59] guy_in0xnito
+Is there a place where i can read more about those ?
+
+
+[04/13/2024 08:23] dany_armstrong
+I understood the protocol and code base perfectly. Now let's see what's wrong in there. 🧐 🧐 🧐
+
+{Reactions}
+👏🏼 (2) 
+
+[04/14/2024 04:59] aman_1602
+Any ai which is helpful in solving
+
+
+[04/14/2024 05:11] degenext
+solidityscan.com
+
+
+[04/14/2024 13:20] aman_1602
+Thank you @En3cyptedDegenExt
+
+{Reactions}
+🚀 
+
+[04/14/2024 14:24] daniel526
+Oops! Just spammed the private thread with a bunch of questions, hope you make an effort of giving a response as soon as you can @dyed | Panoptic
+
+
+[04/15/2024 02:46] dinesh11g
+Hi guys do anyone drawn diagram for this protocol?
+
+
+[04/15/2024 05:01] guy_in0xnito
+Why are sellers exercisers in the protocol shouldn't buyer be that ?
+
+
+[04/15/2024 05:06] dinesh11g
+it's not visible
+
+
+[04/15/2024 05:07] peakycryptos
+https://panoptic.xyz/img/protocol-architecture.svg
+
+
+[04/15/2024 05:08] dinesh11g
+thank you
+
+
+[04/15/2024 05:08] peakycryptos
+When a seller sells a position it is LP deployed within a  certain range in Uniswap. If the position is bought and it now goes out of range, force exercising allows the seller to forecefully exercise the buyer and close their position
+
+
+[04/16/2024 03:36] tigerfrake
+Does the protocol support upgradeability? i.e Are there any `upgradeable` contracts present?
+
+
+[04/16/2024 03:45] dyedm1
+No.
+
+
+[04/16/2024 03:46] tigerfrake
+Thanks
+
+
+[04/16/2024 07:18] subsix
+@dyed | Panoptic What are the use of delegate, refund and revoke logic of CollateralTracker, can u give an example?
+
+
+[04/16/2024 08:55] olanre_waju
+you will find use case in PP, for example see how delegate is being used in PP.forceexercise()
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-99F6C.png
+
+{Reactions}
+👍 (2) 
+
+[04/16/2024 13:33] dyedm1
+Suppose you need to force exercise an account and that account collateralized their positions with different tokens than are needed to settle their position (for example if they owe a bunch of ETH in premium or intrinsic value, but have mostly USDC). You'd need to provide the right tokens (ETH in this case) temporarily to that account and receive USDC back pro rata for that exercise to work. The same goes for liquidations -- if they have the wrong type or not enough collateral to close all their positions, you have to provide the difference upfront and it gets settled with you afterward. It's basically a way for the Panoptic Pool to do authorized token transfers between a liquidator or force exercisor and the exercisee/liquidatee, and denominate protocol loss correctly in the case of `revoke`.
+
+
+[04/16/2024 13:49] dinesh11g
+it mentioned like not to use return values but they used in some contracts and also mentioned it as intended. I'm somewhat confused, can anyone explain ?
+
+
+[04/17/2024 14:01] 0xhacksmithh
+@dyed | Panoptic Hi Sir, made a PT. Pls look at it, whenever you have free time, thnks
+
+
+[04/18/2024 09:52] sp1cymeatball
+@dyed | Panoptic hi, what is donor NFT, any examples?
+
+
+[04/18/2024 14:33] liffidmonky
+what doe SW mean in the test cases @dyed | Panoptic ? like getOTMSW => getOffTHeMoneyStrikeWitdht..?
+
+
+[04/18/2024 14:43] gr34t.l4k3
+
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-7597B.png
+
+
+[04/18/2024 15:02] sp1cymeatball
+yeah, I've seen it, but still curious
+
+
+[04/18/2024 15:03] gr34t.l4k3
+
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-5B63F.png
+
+
+[04/18/2024 19:07] dyedm1
+Strike and width
+So get a strike and width  that will result in an out-of-the-money option
+
+
+[04/18/2024 20:32] 0xstalin
+has anyone had this error when running the test suite?
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-3BF84.png
+
+{Reactions}
+😂 
+
+[04/19/2024 07:25] 0xaman.
+No , mine run successful
+
+{Reactions}
+👀 
+
+[04/19/2024 07:27] 0xsorrynotsorry
+Try foundryup?
+
+{Reactions}
+💡 
+
+[04/19/2024 07:30] 0xstalin
+still fails, interestingly, it seems to fail with only a few tests, for example, this one
+test_Success_forceExerciseDelta
+
+{Reactions}
+👀 
+
+[04/19/2024 07:31] 0xsorrynotsorry
+What's it triggered from when you increase verbosity to -vvvv?
+
+
+[04/19/2024 07:31] 0xsorrynotsorry
+Can you see it?
+
+
+[04/19/2024 07:34] 0xstalin
+aaaah, what a dumb I'm hahaha, I see why is failing `[FAIL. Reason: InputListFail();` I did not look at the error message, I just read the message about aborting test, and I thought it may be smth wrong on my foundry settings
+
+
+[04/19/2024 07:34] 0xstalin
+did not thought about the test itself being the one causing the problem 😮‍💨
+
+
+[04/19/2024 07:34] 0xsorrynotsorry
+Oh, I didn't see it either 😅
+
+{Reactions}
+4739_Skeletor 
+
+[04/19/2024 07:36] 0xstalin
+or one of two things, either the test has smth wrong, or there is a nasty bug causing the test to fail, I guess is time to dig to discover it 👀
+
+{Reactions}
+🙌 
+
+[04/19/2024 10:30] mansa11
+Does anyone knows why console.log is'nt working in this project?
+
+
+[04/19/2024 12:05] dyedm1
+That's odd, is your profile `ci_test`? Which RPC provider are you using? We've probably run that test with an order of magnitude more runs than your RPC provider will let you do and never seen that error, so would be curious to see a trace if you have one.
+
+
+[04/19/2024 12:06] dyedm1
+Did you remember to import "forge-std/Test.sol" in the contract you're logging from?
+
+
+[04/19/2024 12:07] mansa11
+Yes I did. Tried it both in the contracts file and also the test files
+
+
+[04/19/2024 12:08] dyedm1
+What error is it failing with?
+
+
+[04/19/2024 12:55] liffidmonky
+Something weird is happening to me too. In some test logging works but not in others. I doesnt even fail it just doesnt print anything is weird
+
+
+[04/19/2024 12:56] sp1cymeatball
+fuzz test probably
+
+
+[04/19/2024 13:08] dyedm1
+Yeah you need to crank the verbosity. Fuzz tests don't log anything on success by default because there are multiple runs, only unit tests do.
+
+
+[04/19/2024 16:58] 0xstalin
+yeees, I have the `ci_test` and I'm using alchemy as the RPC provider
+
+
+[04/19/2024 17:36] liffidmonky
+@dyed | Panoptic  why when minting a new PanopticPool, 1e6 amount of tokens is minted? Why not let the user decide how much liquidity to start the pool with? is it related to the virtual shares?
+
+
+[04/20/2024 04:44] dinesh11g
+anyone able to run slither ?
+
+
+[04/20/2024 09:10] sammytm
+yeah
+
+
+[04/20/2024 09:24] dinesh11g
+I have some import errors
+
+
+[04/20/2024 13:32] senyab
+Could someone share how he console.log the LeftRightSigned?
+
+
+[04/20/2024 14:00] sammytm
+unwrap it i guess
+
+{Reactions}
+🤝 
+
+[04/20/2024 15:35] senyab
+When you try to consoleLogInt, you also have nothing in terminal when -vv?
+
+
+[04/20/2024 18:47] mansa11
+@dyed | Panoptic please check PT
+
+
+[04/20/2024 20:40] dyedm1
+Those shares are virtual, so the user does not actually have to mint them. We decided on 1,000,000:1 as a safe initial share price and did not see value in allowing deployers to customize the ratio of virtual shares minted.
+
+
+[04/20/2024 20:40] dyedm1
+You need to crank the verbosity, fuzz tests do not log by default because they have multiple runs
+
+
+[04/21/2024 02:52] guy_in0xnito
+Can anyone tell me the reason of having safeBatcjTransferFrom?
+@dyed | Panoptic
+
+
+[04/21/2024 06:19] acegawd
+Messaged you in a 🧵 @dyed | Panoptic
+
+
+[04/21/2024 15:17] wangxx2026
+@dyed | Panoptic pls check fr, I can't send you a message.
+
+
+[04/21/2024 19:48] dyedm1
+My DMs are not open to this server, make a private thread with me here
+
+
+[04/21/2024 19:48] dyedm1
+It's part of the ERC1155 standard
+
+
+[04/21/2024 21:32] 0xblackskull
+```
+Compiler run failed:
+Error: Compiler error (/solidity/libsolidity/codegen/LValue.cpp:51):Stack too deep. Try compiling with `--via-ir` (cli) or the equivalent `viaIR: true` (standard JSON) while enabling the optimizer. Otherwise, try removing local variables.
+CompilerError: Stack too deep. Try compiling with `--via-ir` (cli) or the equivalent `viaIR: true` (standard JSON) while enabling the optimizer. Otherwise, try removing local variables.
+    --> contracts/PanopticPool.sol:1944:65:
+     |
+1944 |                                       
+```
+
+hey can anyone tell me how to resolve this error?
+
+
+[04/21/2024 23:21] wangxx2026
+Started a thread.
+
+
+[04/21/2024 23:33] guy_in0xnito
+Are we sending orders through that?
+
+
+[04/22/2024 08:07] jecikzerrikan
+yeah, it depends what you are trying to do, but see if my conversation with dyed above is going to be helpful: https://discord.com/channels/810916927919620096/1222328860344062024/1227327167361318913
+
+
+[04/22/2024 09:18] 0xgreywolf
+Hi @dyed | Panoptic. Is the CollateralTokenTracker0 or CollateralTokenTracker1 specific only to one options trader (for his own collateral) or is it a liquidity pool in general?
+
+
+[04/22/2024 12:02] olanre_waju
+For each Panoptic pool, there's a CT0 and CT1 associated with the pool.
+
+{Reactions}
+🙏 
+
+[04/22/2024 12:04] 0xgreywolf
+Okay. Thank you.
+
+
+[04/22/2024 16:10] acegawd
+Asked a follow-up in 🧵 @dyed | Panoptic
+
+{Reactions}
+👍 
+
+[04/22/2024 19:59] 0xstalin
+Time to wrap up this contest. I had an exceptional experience auditing this protocol. 
+Many thanks to @dyed | Panoptic for answering all of my questions, your help is very much appreciated, it helped me a lot to understand how things work. 
+My best wishes for all the future endeavors of the protocol.  🫡
+
+
+[04/22/2024 20:02] C4
+**🚨 AUDIT ALERT**
+
+@🐺Wardens The **Panoptic** audit is now closed! Huge thanks to everyone who participated 🔍, whether you submitted a finding or not.
+
+What's next: The sponsor team and judge will review the findings over the next couple of weeks. Keep an eye on #📢・c4-updates for regular updates on how the audit is progressing through awarding 🤑🏆, judging 🧑‍⚖️ and reporting 📜. Feel free to ping a Contest-Admin if you have questions along the way!
+
+
+[04/22/2024 20:02] sammytm
+How many subs?
+
+{Reactions}
+👀 
+
+[04/22/2024 20:12] senyab
+Totally agree, it was perfect experience, @dyed | Panoptic thanks 🙏
+
+
+[04/22/2024 20:12] senyab
+How to get into the escalation part , when will it happened?
+
+
+[04/22/2024 20:24] irving6969
+@dyed | Panoptic thanks for answering my dumb questions patiently . I learned a lot  from auditting this protocol.
+
+
+[04/22/2024 20:33] 0xstalin
+30 mins and the findings repo has not appeared yet 👁️ 
+I'm smelling  1k findings  🫠
+
+
+[04/22/2024 20:34] 0xstalin
+prob in 3 weeks from now, you need to have backstage role to access the findings repo and be able to participate on the esclation period
+
+
+[04/22/2024 20:34] sammytm
+I highly doubt that, chat been really quite since week 2 or something
+
+
+[04/22/2024 20:34] sammytm
+I'd place my bets at around 400-600
+
+
+[04/22/2024 20:34] 0xstalin
+public chat, we don't know how many ppl talked to sponsor on private threads 🫠
+
+
+[04/22/2024 20:35] sammytm
+tru but might be a indicator hehe
+
+{Reactions}
+👁️ 
+
+[04/22/2024 20:53] 0xstalin
+
+
+{Attachments}
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/image-7BC6B.png
+
+
+[04/22/2024 20:53] dyedm1
+Thanks for playing everyone! Excited to review all of your findings 👀
+
+{Reactions}
+🫡 (12) 
+
+[04/22/2024 21:03] sammytm
+hehe guess i was right
+
+
+[04/22/2024 23:24] guy_in0xnito
+Just goto say it 
+The documentation  was on next level 
+Thanks for making most of the things in inline docs 
+Not making me go to the website docs
+
+
+[04/22/2024 23:24] guy_in0xnito
+Bro dyad is going to have more than this i think
+
+
+[04/24/2024 04:10] iwildsniperi
+nooooooooooo dont say it
+
+{Reactions}
+😅 (5) 
+
+[05/05/2024 13:45] sammytm
+update? 🙏
+
+
+[05/06/2024 11:51] nour99
+??
+
+
+[05/06/2024 12:32] 0xsorrynotsorry
+Still in judging process.  @sammy @NOUR99
+
+{Reactions}
+👍 
+
+[05/06/2024 18:10] saint6704
+@Daniel526 bro you submitted more than 50 issues 🫡
+
+
+[05/06/2024 18:10] saint6704
+:chefskiss:
+
+
+[05/06/2024 18:11] daniel526
+Don't worry, none of them is valid!
+
+{Reactions}
+4739_Skeletor (3) 😂 (4) 
+
+[05/06/2024 18:12] saint6704
+🐐
+
+
+[05/08/2024 18:28] golomp3761
+Just courious, how did you check that?
+
+
+[05/08/2024 19:32] tigerfrake
+Same here!
+
+
+[05/09/2024 07:45] sammytm
+advanced mathematics
+
+
+[05/09/2024 12:33] stormreckson
+Back stage access and searched the warden's name
+
+
+[05/10/2024 21:29] maxwell4426
+How do you search the warden's name?
+
+
+[05/11/2024 06:32] t1moh
+forder `data` in findings repo contains all the submissions
+
+{Reactions}
+✅ (2) 👍🏾 (2) 
+
+[05/13/2024 11:34] shealtielanz
+Wen results 👀
+
+{Reactions}
+4739_Skeletor (5) ❓ (3) 
+
+[05/13/2024 11:38] shealtielanz
+https://tenor.com/view/sleepy-sleeping-sleepy-dog-perritodormido-dormido-gif-16542296809354104671
+
+{Embed}
+https://tenor.com/view/sleepy-sleeping-sleepy-dog-perritodormido-dormido-gif-16542296809354104671
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/sleepy-sleeping-37B4A.png
+
+
+[05/13/2024 19:22] iwildsniperi
+https://tenor.com/view/wen-when-mob-gif-10060397160930223678
+
+{Embed}
+https://tenor.com/view/wen-when-mob-gif-10060397160930223678
+Code4rena - ARCHIVE-Q2-2024 - panoptic-apr01 [1222328860344062024].txt_Files/wen-when-A12ED.png
+
+{Reactions}
+😹 (3) 
+
+[05/13/2024 21:40] thebrittfactor
+🤑 🎉  Awards for **Panoptic**:
+
+$28,226.97 USDC » @0xLogos 
+$11,316.21 USDC » @bin2chen 
+$8,159.27 USDC » @KupiaSec 
+$8,159.27 USDC » @rbserver 
+$8,126.32 USDC » @0xdice91 
+$8,126.32 USDC » @Kalogerone 
+$4,146.86 USDC » @pkqs90 
+$3,656.84 USDC » @petro_1912 
+$3,564.62 USDC » @CodeCipher 
+$3,402.78 USDC » @0xStalin 
+$3,189.89 USDC » DanielArmstrong 
+$2,812.96 USDC » Joshuajee  
+$2,050.64 USDC » JecikPo 
+$1,139.25 USDC » @Auditor 
+$1,139.25 USDC » @Udsen 
+$1,076.50 USDC » @DadeKuma 
+$828.08 USDC » @Bauchibred 
+$828.08 USDC » Dup1337 (@sorryNotsorry, @deliriusz and ChaseTheLight) 
+$648.15 USDC » @jesjupyter 
+$648.15 USDC » @sammy 
+$212.89 USDC » @99Crits 
+$212.89 USDC » @Naresh 
+$212.89 USDC » @Rolezn 
+$212.89 USDC » @ZanyBonzy 
+$212.89 USDC » @Albahaca 
+$212.89 USDC » bareli 
+$212.89 USDC » @cheatc0d3 
+$212.89 USDC » @favelanky 
+$212.89 USDC » @hihen 
+$212.89 USDC » @radin100 
+$212.89 USDC » @slvDev 
+$153.80 USDC » @Vancelot
+
+
+[05/13/2024 21:41] thebrittfactor
+$32.96 USDC » @0xhacksmithh 
+$32.96 USDC » CodeWasp (@kuprum, @slylandro_star, @spaghetticode_sentinel and @audithare) 
+$32.96 USDC » @IllIllI 
+$32.96 USDC » John_Femi  
+$32.96 USDC » @K42 Ψ
+$32.96 USDC » @Rhaydden 
+$32.96 USDC » @Sathish9098 
+$32.96 USDC » @Topmark 
+$32.96 USDC » blockchainbuttonmasher  
+$32.96 USDC » @codeslide 
+$32.96 USDC » crc32  
+$32.96 USDC » @d3e4 
+$32.96 USDC » @grearlake 
+$32.96 USDC » @jasonxiale 
+$32.96 USDC » @lanrebayode77 
+$32.96 USDC » lirezArAzAvi  
+$32.96 USDC » @lsaudit 
+$32.96 USDC » mining_mario  
+$32.96 USDC » @oualidpro 
+$32.96 USDC » @pfapostol 
+$32.96 USDC » satoshispeedrunner  
+$32.96 USDC » @twcctop 
+$32.96 USDC » @zabihullahazadzoi 
+
+🏁 Findings summary
+--------------------------------------
+High risk findings: 2 unique (7 total)
+Med risk findings: 9 unique (21 total)
+QA reports: 43 (Best: DadeKuma)
+
+Awards will be distributed on Polygon within the next week. Congratulations all!  💸 💸 💸
+
+*Note: If you participated in this audit and don’t see your name on this list, please wait until the report is published and the findings repo is made public to check on your submissions.*
+
+{Reactions}
+andbang (3) c4todo (4) code4rena (4) chefskiss (3) 
+
+[05/13/2024 21:46] shealtielanz
+@0xdice91 we feast ❤️🔥🎉🎉🎉🎉🎉🎉
+
+{Reactions}
+8374_Telegram 
+
+[05/13/2024 21:47] jecikzerrikan
+oh yeah!
+
+
+[05/13/2024 21:47] shealtielanz
+Congrats 🎊 You’re a beast ❤️
+
+
+[05/13/2024 21:47] jecikzerrikan
+congrats everyone!
+
+
+[05/13/2024 21:48] jecikzerrikan
+It was a really hard one
+
+
+[05/13/2024 21:53] sammytm
+@JecikPo congrats buddy
+
+
+[05/13/2024 21:53] sammytm
+congrats everyone!
+
+
+[05/13/2024 21:54] kalogerone
+Congrats everyone
+
+
+[05/13/2024 21:54] kalogerone
+First big pay
+
+{Reactions}
+😈 (3) 
+
+[05/13/2024 21:55] jecikzerrikan
+Thank you Sammy! But to be honest, this time I had more luck than skill, it was just one medium that I found by complete accident.
+
+
+[05/13/2024 21:56] sammytm
+@0xLogos beast, congrats!
+
+
+[05/13/2024 21:56] sammytm
+hahah
+
+
+[05/13/2024 21:57] sammytm
+same for me, my only valid finding was a last minute solodit recycle
+
+
+[05/13/2024 21:57] jecikzerrikan
+a nice one! Congrats!
+
+{Reactions}
+🙏 
+
+[05/13/2024 21:59] jecikzerrikan
+I'd love to see the report, as the code seemed so tight to me
+
+
+[05/13/2024 22:05] 0xdice91
+@0xLogos  🔥🔥
+Congrats ser ....Solo High
+
+{Reactions}
+🔥 (4) 
+
+[05/13/2024 22:07] 0xdice91
+Thanks alot ser...🤝
+For the motivation and help
+
+{Reactions}
+❤️ (2) 
+
+[05/14/2024 06:15] golomp3761
+Congrats to winners 🙂
+Do you know how can I check that why none od minę findings Has not been accepted?
+
+
+[05/14/2024 08:34] joshuajee
+Wow, my biggest reward from auditing. 🎉🎉🎉
+
+{Reactions}
+❤️ (4) 🫡 (2) 🎉 (4) 
+
+[05/14/2024 09:56] daniel526
+congratulations mate!
+
+
+[05/14/2024 12:46] mosharaf
+@Kalogerone congratulations man!
+
+
+[05/14/2024 13:39] kalogerone
+Thank you sir, we go onto bigger things now 🚀
+
+
+[05/14/2024 18:03] cryptothemex
+Kindly provide link to feedback on our qa and gas report.
+
+
+[05/14/2024 19:46] joshuajee
+Thank you
+
+
+[05/15/2024 15:58] 0xgreywolf
+Hi. If it's okay, may I ask what's this solodit recycle finding?
+
+
+[05/15/2024 20:36] sammytm
+uniswap slot0 manipulation
+
+{Reactions}
+👍 (2) 
+
+[05/15/2024 20:37] 0xgreywolf
+Okay. Thank you. 🙏
+
+
+[05/15/2024 20:58] iwildsniperi
+no way you still get 600$ for such a thing
+
+
+[05/15/2024 20:58] iwildsniperi
+is it?
+
+
+[05/15/2024 21:21] wanziskata
+Is that a valid submission of yours? I submitted one as well, but maybe it was insufficient 🧐
+
+
+[05/15/2024 21:26] wanziskata
+Btw, did you include a coded PoC?
+
+
+[05/16/2024 06:04] wanziskata
+nvm, Sammy, thank you anyways 😄
+
+
+[05/16/2024 20:00] itsmetechjay
+ℹ️ This channel is pending archive.   As a result, any private threads will be permanently deleted on Friday, 24 May 2024.  Please make sure to grab anything you might need before then.
+
+
+[05/20/2024 10:56] shealtielanz
+Wen rewards 🤑
+
+
+[05/20/2024 11:57] wanziskata
+check if you've added the polygon usdc address https://discord.com/channels/810916927919620096/810936719003090974/1239619728205676635
+
+
+[05/21/2024 02:50] 0xdice91
+Thanks ser....seen🤝
+
+{Reactions}
+chefskiss (2) 
+
+[05/22/2024 10:22] cryptothemex
+when feedback on submissions available?
+
+
+[05/22/2024 14:06] harryfutures
+🤑🤑🤑
+
+
+[05/22/2024 23:00] sammytm
+alr got mine a while back
+
+{Reactions}
+👍 (2) 
+
+[05/24/2024 13:21] itsmetechjay
+ℹ️ Reminder: this channel will be deleted in 24 hours.
+
+{Reactions}
+😢 
+
+==============================================================
+Exported 386 message(s)
+==============================================================
